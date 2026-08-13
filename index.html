@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ledger">
+<meta name="theme-color" content="#F1EDE1">
+<title>Habit Ledger</title>
+<style>
+  :root{
+    --bg:#F1EDE1;
+    --panel:#FBF9F3;
+    --ink:#2A2F28;
+    --ink-soft:#8C8A78;
+    --accent:#3F6B4A;
+    --accent-soft:#DCE7DE;
+    --gold:#B8863B;
+    --gold-soft:#F1E4C8;
+    --dot-empty:#DDD7C6;
+    --rule:rgba(42,47,40,0.10);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+    min-height:100vh;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  #app{
+    max-width:460px;
+    margin:0 auto;
+    padding:26px 20px 40px;
+  }
+
+  .eyebrow{
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    font-weight:600;
+    margin:0 0 4px 2px;
+  }
+  h1{
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+    font-size:28px;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    margin:0 0 20px 2px;
+  }
+
+  /* ---- header ledger card ---- */
+  .ledger-header{
+    background:var(--panel);
+    border-radius:16px;
+    padding:20px 20px 18px;
+    box-shadow: inset 0 0 0 1px var(--rule);
+    margin-bottom:22px;
+  }
+  .points-row{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .points-num{
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size:34px;
+    font-weight:600;
+    font-variant-numeric: tabular-nums;
+  }
+  .points-label{
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    font-weight:600;
+  }
+  .tier-name{
+    font-family: ui-serif, Georgia, serif;
+    font-size:15px;
+    color:var(--gold);
+    font-weight:600;
+    text-align:right;
+  }
+  .tier-next{
+    font-size:11px;
+    color:var(--ink-soft);
+    text-align:right;
+    margin-top:2px;
+  }
+  .tier-track{
+    height:6px;
+    border-radius:999px;
+    background:var(--dot-empty);
+    overflow:hidden;
+  }
+  .tier-fill{
+    height:100%;
+    background:var(--gold);
+    border-radius:999px;
+    transition:width .4s ease;
+  }
+  .perfect-banner{
+    margin-top:14px;
+    padding:10px 12px;
+    border-radius:10px;
+    background:var(--gold-soft);
+    color:#6B4E1E;
+    font-size:12.5px;
+    font-weight:600;
+    text-align:center;
+    display:none;
+  }
+  .perfect-banner.show{ display:block; }
+
+  /* ---- section label ---- */
+  .section-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin:0 2px 10px;
+  }
+  .section-title{
+    font-family: ui-serif, Georgia, serif;
+    font-size:17px;
+    font-weight:600;
+  }
+  .manage-link{
+    border:none;
+    background:none;
+    color:var(--ink-soft);
+    font-size:12.5px;
+    font-weight:600;
+    cursor:pointer;
+    text-decoration:underline;
+    padding:4px;
+  }
+  .manage-link.active{ color:var(--accent); }
+
+  /* ---- habit cards ---- */
+  .habit-card{
+    background:var(--panel);
+    border-radius:14px;
+    padding:16px 16px 14px;
+    margin-bottom:12px;
+    box-shadow: inset 0 0 0 1px var(--rule);
+  }
+  .habit-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:12px;
+  }
+  .habit-name{
+    font-size:16px;
+    font-weight:700;
+    line-height:1.3;
+  }
+  .habit-meta{
+    font-size:11.5px;
+    color:var(--ink-soft);
+    margin-top:3px;
+  }
+  .streak-badge{
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size:13px;
+    font-weight:700;
+    color:var(--accent);
+    white-space:nowrap;
+  }
+  .remove-btn{
+    border:none;
+    background:none;
+    color:#B0473F;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    padding:2px 4px;
+  }
+
+  .dot-trail{
+    display:flex;
+    gap:5px;
+    margin-bottom:14px;
+  }
+  .dot{
+    flex:1;
+    height:8px;
+    border-radius:4px;
+    background:var(--dot-empty);
+  }
+  .dot.filled{ background:var(--accent); }
+  .dot.today{ box-shadow: 0 0 0 2px var(--panel), 0 0 0 3px var(--ink-soft); }
+
+  .mark-btn{
+    width:100%;
+    border:none;
+    padding:13px 0;
+    border-radius:11px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow: inset 0 0 0 1.5px var(--accent);
+    background:transparent;
+    color:var(--accent);
+  }
+  .mark-btn.done{
+    background:var(--accent);
+    color:#fff;
+    box-shadow:none;
+  }
+
+  /* ---- add habit row ---- */
+  .add-row{
+    display:flex;
+    gap:8px;
+    margin-top:6px;
+  }
+  .add-input{
+    flex:1;
+    border:none;
+    border-radius:11px;
+    padding:13px 14px;
+    font-size:14px;
+    background:var(--panel);
+    box-shadow: inset 0 0 0 1px var(--rule);
+    color:var(--ink);
+  }
+  .add-input:focus{ outline:none; box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .add-btn{
+    border:none;
+    border-radius:11px;
+    padding:0 20px;
+    font-size:14px;
+    font-weight:700;
+    background:var(--accent);
+    color:#fff;
+    cursor:pointer;
+  }
+
+  .empty-note{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    text-align:center;
+    padding:20px 10px;
+  }
+
+  .footnote{
+    text-align:center;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    margin-top:26px;
+    line-height:1.6;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <p class="eyebrow">Habit Ledger</p>
+  <h1>Today's entries</h1>
+
+  <div class="ledger-header">
+    <div class="points-row">
+      <div>
+        <div class="points-num" id="pointsNum">0</div>
+        <div class="points-label">total points</div>
+      </div>
+      <div>
+        <div class="tier-name" id="tierName">Starting Out</div>
+        <div class="tier-next" id="tierNext"></div>
+      </div>
+    </div>
+    <div class="tier-track"><div class="tier-fill" id="tierFill" style="width:0%"></div></div>
+    <div class="perfect-banner" id="perfectBanner">Perfect day — every habit checked off. +2 bonus.</div>
+  </div>
+
+  <div class="section-row">
+    <div class="section-title">Habits</div>
+    <button class="manage-link" id="manageBtn">Manage</button>
+  </div>
+
+  <div id="habitList"></div>
+
+  <div class="add-row">
+    <input class="add-input" id="newHabitInput" type="text" placeholder="Add a habit…" maxlength="40">
+    <button class="add-btn" id="addHabitBtn">Add</button>
+  </div>
+
+  <p class="footnote">Streaks count a day as unbroken until you've missed it entirely — so today doesn't break yesterday's run until it's actually over.</p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var STORAGE_KEY = "habitLedger";
+  var TIERS = [
+    { min:0,   name:"Starting Out" },
+    { min:25,  name:"Building the Habit" },
+    { min:100, name:"Consistent" },
+    { min:250, name:"Dedicated" },
+    { min:500, name:"Ironclad" }
+  ];
+  var TRAIL_DAYS = 14;
+
+  var state = {
+    habits: [
+      { id: "h1", name: "Brush teeth" },
+      { id: "h2", name: "Homework / study" },
+      { id: "h3", name: "Stretch" }
+    ],
+    completionLog: {},   // { "2026-08-13": ["h1","h2"] }
+    longest: {}          // { "h1": 7 }
+  };
+  var manageMode = false;
+
+  function pad(n){ return n < 10 ? "0"+n : ""+n; }
+  function fmtDate(d){ return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate()); }
+  function todayStr(){ return fmtDate(new Date()); }
+  function dateOffset(days){
+    var d = new Date();
+    d.setDate(d.getDate() + days);
+    return fmtDate(d);
+  }
+  function dayList(habitId, date){
+    return (state.completionLog[date] || []).indexOf(habitId) !== -1;
+  }
+
+  function currentStreak(habitId){
+    var streak = 0;
+    var startOffset = dayList(habitId, todayStr()) ? 0 : -1;
+    var i = startOffset;
+    while (dayList(habitId, dateOffset(i))){
+      streak++;
+      i--;
+    }
+    return streak;
+  }
+
+  function totalPoints(){
+    var count = 0, bonus = 0;
+    Object.keys(state.completionLog).forEach(function(date){
+      var ids = state.completionLog[date];
+      count += ids.length;
+      if (state.habits.length > 0 && ids.length >= state.habits.length){
+        var allDone = state.habits.every(function(h){ return ids.indexOf(h.id) !== -1; });
+        if (allDone) bonus += 2;
+      }
+    });
+    return count + bonus;
+  }
+
+  function tierFor(points){
+    var current = TIERS[0], next = null;
+    for (var i = 0; i < TIERS.length; i++){
+      if (points >= TIERS[i].min) current = TIERS[i];
+      else { next = TIERS[i]; break; }
+    }
+    return { current: current, next: next };
+  }
+
+  function save(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+  }
+  function load(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw){
+        var parsed = JSON.parse(raw);
+        if (parsed && parsed.habits) state = parsed;
+      }
+    }catch(e){}
+  }
+
+  function toggleHabitToday(habitId){
+    var t = todayStr();
+    if (!state.completionLog[t]) state.completionLog[t] = [];
+    var idx = state.completionLog[t].indexOf(habitId);
+    if (idx === -1){
+      state.completionLog[t].push(habitId);
+    } else {
+      state.completionLog[t].splice(idx, 1);
+    }
+    var s = currentStreak(habitId);
+    if (!state.longest[habitId] || s > state.longest[habitId]) state.longest[habitId] = s;
+    save();
+    render();
+  }
+
+  function addHabit(name){
+    name = name.trim();
+    if (!name) return;
+    var id = "h" + Date.now();
+    state.habits.push({ id: id, name: name });
+    save();
+    render();
+  }
+
+  function removeHabit(habitId){
+    state.habits = state.habits.filter(function(h){ return h.id !== habitId; });
+    save();
+    render();
+  }
+
+  function els(tag, cls, html){
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (html !== undefined) e.innerHTML = html;
+    return e;
+  }
+
+  function render(){
+    var pts = totalPoints();
+    document.getElementById("pointsNum").textContent = pts;
+
+    var t = tierFor(pts);
+    document.getElementById("tierName").textContent = t.current.name;
+    var nextEl = document.getElementById("tierNext");
+    var fillEl = document.getElementById("tierFill");
+    if (t.next){
+      var span = t.next.min - t.current.min;
+      var into = pts - t.current.min;
+      nextEl.textContent = (t.next.min - pts) + " to " + t.next.name;
+      fillEl.style.width = Math.min(100, Math.round((into/span)*100)) + "%";
+    } else {
+      nextEl.textContent = "Top tier";
+      fillEl.style.width = "100%";
+    }
+
+    var todayIds = state.completionLog[todayStr()] || [];
+    var perfect = state.habits.length > 0 && state.habits.every(function(h){ return todayIds.indexOf(h.id) !== -1; });
+    document.getElementById("perfectBanner").classList.toggle("show", perfect);
+
+    var list = document.getElementById("habitList");
+    list.innerHTML = "";
+
+    if (state.habits.length === 0){
+      list.appendChild(els("div", "empty-note", "No habits yet — add your first one below."));
+    }
+
+    state.habits.forEach(function(h){
+      var doneToday = todayIds.indexOf(h.id) !== -1;
+      var streak = currentStreak(h.id);
+      var longest = state.longest[h.id] || 0;
+
+      var card = els("div", "habit-card");
+
+      var top = els("div", "habit-top");
+      var left = els("div");
+      left.appendChild(els("div", "habit-name", h.name));
+      left.appendChild(els("div", "habit-meta", "longest streak: " + longest + (longest === 1 ? " day" : " days")));
+      top.appendChild(left);
+
+      var right = els("div", "", "");
+      right.style.textAlign = "right";
+      var badge = els("div", "streak-badge", streak > 0 ? (streak + (streak === 1 ? " day" : " days")) : "—");
+      right.appendChild(badge);
+      if (manageMode){
+        var rm = els("button", "remove-btn", "Remove");
+        rm.addEventListener("click", function(){ removeHabit(h.id); });
+        right.appendChild(rm);
+      }
+      top.appendChild(right);
+      card.appendChild(top);
+
+      var trail = els("div", "dot-trail");
+      for (var i = -(TRAIL_DAYS-1); i <= 0; i++){
+        var ds = dateOffset(i);
+        var filled = dayList(h.id, ds);
+        var dot = els("div", "dot" + (filled ? " filled" : "") + (i === 0 ? " today" : ""));
+        trail.appendChild(dot);
+      }
+      card.appendChild(trail);
+
+      var btn = els("button", "mark-btn" + (doneToday ? " done" : ""), doneToday ? "Done today ✓" : "Mark done today");
+      btn.addEventListener("click", function(){ toggleHabitToday(h.id); });
+      card.appendChild(btn);
+
+      list.appendChild(card);
+    });
+  }
+
+  document.getElementById("addHabitBtn").addEventListener("click", function(){
+    var input = document.getElementById("newHabitInput");
+    addHabit(input.value);
+    input.value = "";
+  });
+  document.getElementById("newHabitInput").addEventListener("keydown", function(e){
+    if (e.key === "Enter"){
+      addHabit(this.value);
+      this.value = "";
+    }
+  });
+  document.getElementById("manageBtn").addEventListener("click", function(){
+    manageMode = !manageMode;
+    this.classList.toggle("active", manageMode);
+    this.textContent = manageMode ? "Done" : "Manage";
+    render();
+  });
+
+  load();
+  render();
+})();
+</script>
+</body>
+</html>
