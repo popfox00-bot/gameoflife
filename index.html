@@ -63,6 +63,9 @@
   .streak-badge{ font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size:13px; font-weight:700; color:var(--accent); white-space:nowrap; text-align:right; }
   .points-today{ font-size:11px; color:var(--ink-soft); text-align:right; margin-top:2px; }
   .remove-btn{ border:none; background:none; color:var(--danger); font-size:12px; font-weight:600; cursor:pointer; padding:2px 4px; margin-top:4px; }
+  .reorder-row{ display:flex; gap:4px; justify-content:flex-end; margin-top:6px; }
+  .reorder-btn{ border:none; background:var(--bg); box-shadow: inset 0 0 0 1px var(--rule); color:var(--ink); width:26px; height:26px; border-radius:7px; font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .reorder-btn.disabled{ opacity:0.3; pointer-events:none; }
 
   .dot-trail{ display:flex; gap:5px; margin-bottom:14px; }
   .dot{ flex:1; height:8px; border-radius:4px; background:var(--dot-empty); }
@@ -237,7 +240,8 @@
   // of whether the person currently has them added — deleting one from your
   // active list doesn't remove it from this pool, so it can be re-added later.
   var HABIT_TEMPLATES = [
-    { name:"Brush teeth", type:"duo", maxPoints:40 },
+    { name:"Brush teeth", type:"duo", maxPoints:40, subs:[{ id:"morning", label:"Morning" }, { id:"evening", label:"Evening" }] },
+    { name:"Walk the dog", type:"duo", maxPoints:60, subs:[{ id:"morning", label:"Morning" }, { id:"afternoon", label:"Afternoon" }, { id:"evening", label:"Evening" }] },
     { name:"Homework / Study", type:"multi", subtitle:"", maxPoints:100, tasks:[{ id:"t1", name:"Task 1" }] },
     { name:"Exercise", type:"multi", subtitle:"", maxPoints:100, tasks:[{ id:"t1", name:"Task 1" }] },
     { name:"Drink water", type:"simple", maxPoints:10 },
@@ -260,6 +264,9 @@
         return { id:"t" + (i+1), name:t.name };
       });
     }
+    if (tpl.type === "duo"){
+      fresh.subs = (tpl.subs || []).map(function(s){ return { id:s.id, label:s.label }; });
+    }
     return fresh;
   }
 
@@ -271,7 +278,8 @@
 
   var state = {
     habits: [
-      { id:"h1", type:"duo", name:"Brush teeth", maxPoints:40 },
+      { id:"h1", type:"duo", name:"Brush teeth", maxPoints:40,
+        subs:[{ id:"morning", label:"Morning" }, { id:"evening", label:"Evening" }] },
       { id:"h2", type:"multi", name:"Homework / Study", subtitle:"", maxPoints:100,
         tasks:[{ id:"t1", name:"Task 1" }] },
       { id:"h3", type:"multi", name:"Exercise", subtitle:"", maxPoints:100,
@@ -298,7 +306,7 @@
   }
 
   function requiredSubCount(habit){
-    if (habit.type === "duo") return 2;
+    if (habit.type === "duo") return (habit.subs || []).length;
     if (habit.type === "multi") return (habit.tasks || []).length;
     return 1;
   }
@@ -308,7 +316,7 @@
       return (habit.tasks || []).filter(function(t){ return ids.indexOf(t.id) !== -1; }).length;
     }
     if (habit.type === "duo"){
-      return ["morning","evening"].filter(function(s){ return ids.indexOf(s) !== -1; }).length;
+      return (habit.subs || []).filter(function(s){ return ids.indexOf(s.id) !== -1; }).length;
     }
     return ids.indexOf("done") !== -1 ? 1 : 0;
   }
@@ -404,6 +412,16 @@
   }
   function removeHabit(habitId){
     state.habits = state.habits.filter(function(h){ return h.id !== habitId; });
+    save();
+    render();
+  }
+  function moveHabit(habitId, delta){
+    var idx = state.habits.findIndex(function(h){ return h.id === habitId; });
+    var newIdx = idx + delta;
+    if (idx === -1 || newIdx < 0 || newIdx >= state.habits.length) return;
+    var tmp = state.habits[idx];
+    state.habits[idx] = state.habits[newIdx];
+    state.habits[newIdx] = tmp;
     save();
     render();
   }
@@ -510,7 +528,7 @@
       list.appendChild(el("div", "empty-note", "No habits yet — add your first one below."));
     }
 
-    state.habits.forEach(function(h){
+    state.habits.forEach(function(h, idx){
       var streak = currentStreak(h);
       var longest = state.longest[h.id] || 0;
       var earnedToday = Math.round(pointsEarned(h, today));
@@ -535,6 +553,14 @@
       right.appendChild(el("div", "streak-badge", streak > 0 ? (streak + (streak === 1 ? " day" : " days")) : "—"));
       right.appendChild(el("div", "points-today", earnedToday + "/" + h.maxPoints + " pts"));
       if (manageMode){
+        var reorder = el("div", "reorder-row");
+        var upBtn = el("button", "reorder-btn" + (idx === 0 ? " disabled" : ""), "↑");
+        var downBtn = el("button", "reorder-btn" + (idx === state.habits.length - 1 ? " disabled" : ""), "↓");
+        if (idx !== 0) upBtn.addEventListener("click", function(){ moveHabit(h.id, -1); });
+        if (idx !== state.habits.length - 1) downBtn.addEventListener("click", function(){ moveHabit(h.id, 1); });
+        reorder.appendChild(upBtn);
+        reorder.appendChild(downBtn);
+        right.appendChild(reorder);
         var rm = el("button", "remove-btn", "Remove");
         rm.addEventListener("click", function(){ removeHabit(h.id); });
         right.appendChild(rm);
@@ -559,12 +585,11 @@
         card.appendChild(btn);
       } else if (h.type === "duo"){
         var row = el("div", "subrow");
-        [["morning","Morning"], ["evening","Evening"]].forEach(function(pair){
-          var subId = pair[0], label = pair[1];
+        (h.subs || []).forEach(function(sub){
           var ids = subIdsFor(h, today);
-          var done = ids.indexOf(subId) !== -1;
-          var pill = el("button", "sub-pill" + (done ? " done" : ""), label + (done ? " ✓" : ""));
-          pill.addEventListener("click", function(){ toggleSub(h, subId); });
+          var done = ids.indexOf(sub.id) !== -1;
+          var pill = el("button", "sub-pill" + (done ? " done" : ""), sub.label + (done ? " ✓" : ""));
+          pill.addEventListener("click", function(){ toggleSub(h, sub.id); });
           row.appendChild(pill);
         });
         card.appendChild(row);
