@@ -20,6 +20,7 @@
     --gold-soft:#F1E4C8;
     --dot-empty:#DDD7C6;
     --rule:rgba(42,47,40,0.10);
+    --danger:#B0473F;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
@@ -31,233 +32,83 @@
     min-height:100vh;
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
-  #app{
-    max-width:460px;
-    margin:0 auto;
-    padding:26px 20px 40px;
-  }
+  #app{ max-width:460px; margin:0 auto; padding:26px 20px 40px; }
 
-  .eyebrow{
-    font-size:11px;
-    letter-spacing:0.18em;
-    text-transform:uppercase;
-    color:var(--ink-soft);
-    font-weight:600;
-    margin:0 0 4px 2px;
-  }
-  h1{
-    font-family: ui-serif, Georgia, "Times New Roman", serif;
-    font-size:28px;
-    font-weight:600;
-    letter-spacing:-0.01em;
-    margin:0 0 20px 2px;
-  }
+  .eyebrow{ font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-soft); font-weight:600; margin:0 0 4px 2px; }
+  h1{ font-family: ui-serif, Georgia, "Times New Roman", serif; font-size:28px; font-weight:600; letter-spacing:-0.01em; margin:0 0 20px 2px; }
 
-  /* ---- header ledger card ---- */
-  .ledger-header{
-    background:var(--panel);
-    border-radius:16px;
-    padding:20px 20px 18px;
-    box-shadow: inset 0 0 0 1px var(--rule);
-    margin-bottom:22px;
-  }
-  .points-row{
-    display:flex;
-    align-items:baseline;
-    justify-content:space-between;
-    margin-bottom:10px;
-  }
-  .points-num{
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size:34px;
-    font-weight:600;
-    font-variant-numeric: tabular-nums;
-  }
-  .points-label{
-    font-size:11px;
-    letter-spacing:0.1em;
-    text-transform:uppercase;
-    color:var(--ink-soft);
-    font-weight:600;
-  }
-  .tier-name{
-    font-family: ui-serif, Georgia, serif;
-    font-size:15px;
-    color:var(--gold);
-    font-weight:600;
-    text-align:right;
-  }
-  .tier-next{
-    font-size:11px;
-    color:var(--ink-soft);
-    text-align:right;
-    margin-top:2px;
-  }
-  .tier-track{
-    height:6px;
-    border-radius:999px;
-    background:var(--dot-empty);
-    overflow:hidden;
-  }
-  .tier-fill{
-    height:100%;
-    background:var(--gold);
-    border-radius:999px;
-    transition:width .4s ease;
-  }
-  .perfect-banner{
-    margin-top:14px;
-    padding:10px 12px;
-    border-radius:10px;
-    background:var(--gold-soft);
-    color:#6B4E1E;
-    font-size:12.5px;
-    font-weight:600;
-    text-align:center;
-    display:none;
-  }
+  .ledger-header{ background:var(--panel); border-radius:16px; padding:20px 20px 18px; box-shadow: inset 0 0 0 1px var(--rule); margin-bottom:22px; }
+  .points-row{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:10px; }
+  .points-num{ font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size:34px; font-weight:600; font-variant-numeric: tabular-nums; }
+  .points-label{ font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft); font-weight:600; }
+  .tier-name{ font-family: ui-serif, Georgia, serif; font-size:15px; color:var(--gold); font-weight:600; text-align:right; }
+  .tier-next{ font-size:11px; color:var(--ink-soft); text-align:right; margin-top:2px; }
+  .tier-track{ height:6px; border-radius:999px; background:var(--dot-empty); overflow:hidden; }
+  .tier-fill{ height:100%; background:var(--gold); border-radius:999px; transition:width .4s ease; }
+  .perfect-banner{ margin-top:14px; padding:10px 12px; border-radius:10px; background:var(--gold-soft); color:#6B4E1E; font-size:12.5px; font-weight:600; text-align:center; display:none; }
   .perfect-banner.show{ display:block; }
 
-  /* ---- section label ---- */
-  .section-row{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin:0 2px 10px;
-  }
-  .section-title{
-    font-family: ui-serif, Georgia, serif;
-    font-size:17px;
-    font-weight:600;
-  }
-  .manage-link{
-    border:none;
-    background:none;
-    color:var(--ink-soft);
-    font-size:12.5px;
-    font-weight:600;
-    cursor:pointer;
-    text-decoration:underline;
-    padding:4px;
-  }
+  .section-row{ display:flex; align-items:center; justify-content:space-between; margin:0 2px 10px; }
+  .section-title{ font-family: ui-serif, Georgia, serif; font-size:17px; font-weight:600; }
+  .manage-link{ border:none; background:none; color:var(--ink-soft); font-size:12.5px; font-weight:600; cursor:pointer; text-decoration:underline; padding:4px; }
   .manage-link.active{ color:var(--accent); }
 
-  /* ---- habit cards ---- */
-  .habit-card{
-    background:var(--panel);
-    border-radius:14px;
-    padding:16px 16px 14px;
-    margin-bottom:12px;
-    box-shadow: inset 0 0 0 1px var(--rule);
-  }
-  .habit-top{
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-    gap:10px;
-    margin-bottom:12px;
-  }
-  .habit-name{
-    font-size:16px;
-    font-weight:700;
-    line-height:1.3;
-  }
-  .habit-meta{
-    font-size:11.5px;
-    color:var(--ink-soft);
-    margin-top:3px;
-  }
-  .streak-badge{
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size:13px;
-    font-weight:700;
-    color:var(--accent);
-    white-space:nowrap;
-  }
-  .remove-btn{
-    border:none;
-    background:none;
-    color:#B0473F;
-    font-size:12px;
-    font-weight:600;
-    cursor:pointer;
-    padding:2px 4px;
-  }
+  .habit-card{ background:var(--panel); border-radius:14px; padding:16px 16px 14px; margin-bottom:12px; box-shadow: inset 0 0 0 1px var(--rule); }
+  .habit-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:10px; }
+  .habit-title-wrap{ display:flex; align-items:center; gap:6px; }
+  .habit-name{ font-size:16px; font-weight:700; line-height:1.3; }
+  .habit-subtitle{ font-size:12px; color:var(--ink-soft); margin-top:1px; }
+  .habit-meta{ font-size:11.5px; color:var(--ink-soft); margin-top:3px; }
+  .edit-icon{ border:none; background:none; color:var(--ink-soft); font-size:13px; cursor:pointer; padding:2px 4px; }
+  .streak-badge{ font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size:13px; font-weight:700; color:var(--accent); white-space:nowrap; text-align:right; }
+  .points-today{ font-size:11px; color:var(--ink-soft); text-align:right; margin-top:2px; }
+  .remove-btn{ border:none; background:none; color:var(--danger); font-size:12px; font-weight:600; cursor:pointer; padding:2px 4px; margin-top:4px; }
 
-  .dot-trail{
-    display:flex;
-    gap:5px;
-    margin-bottom:14px;
-  }
-  .dot{
-    flex:1;
-    height:8px;
-    border-radius:4px;
-    background:var(--dot-empty);
-  }
-  .dot.filled{ background:var(--accent); }
+  .dot-trail{ display:flex; gap:5px; margin-bottom:14px; }
+  .dot{ flex:1; height:8px; border-radius:4px; background:var(--dot-empty); }
+  .dot.partial{ background:var(--accent); opacity:0.45; }
+  .dot.filled{ background:var(--accent); opacity:1; }
   .dot.today{ box-shadow: 0 0 0 2px var(--panel), 0 0 0 3px var(--ink-soft); }
 
-  .mark-btn{
-    width:100%;
-    border:none;
-    padding:13px 0;
-    border-radius:11px;
-    font-size:14px;
-    font-weight:700;
-    cursor:pointer;
-    box-shadow: inset 0 0 0 1.5px var(--accent);
-    background:transparent;
-    color:var(--accent);
-  }
-  .mark-btn.done{
-    background:var(--accent);
-    color:#fff;
-    box-shadow:none;
-  }
+  .mark-btn{ width:100%; border:none; padding:13px 0; border-radius:11px; font-size:14px; font-weight:700; cursor:pointer; box-shadow: inset 0 0 0 1.5px var(--accent); background:transparent; color:var(--accent); }
+  .mark-btn.done{ background:var(--accent); color:#fff; box-shadow:none; }
 
-  /* ---- add habit row ---- */
-  .add-row{
-    display:flex;
-    gap:8px;
-    margin-top:6px;
-  }
-  .add-input{
-    flex:1;
-    border:none;
-    border-radius:11px;
-    padding:13px 14px;
-    font-size:14px;
-    background:var(--panel);
-    box-shadow: inset 0 0 0 1px var(--rule);
-    color:var(--ink);
-  }
+  .subrow{ display:flex; gap:8px; }
+  .sub-pill{ flex:1; border:none; padding:12px 0; border-radius:11px; font-size:13px; font-weight:700; cursor:pointer; box-shadow: inset 0 0 0 1.5px var(--accent); background:transparent; color:var(--accent); }
+  .sub-pill.done{ background:var(--accent); color:#fff; box-shadow:none; }
+
+  .task-list{ display:flex; flex-direction:column; gap:8px; }
+  .task-row{ display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:10px; background:var(--bg); cursor:pointer; }
+  .task-row.done{ background:var(--accent-soft); }
+  .task-check{ width:20px; height:20px; border-radius:6px; box-shadow: inset 0 0 0 1.5px var(--accent); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; color:#fff; }
+  .task-row.done .task-check{ background:var(--accent); }
+  .task-name{ font-size:13.5px; flex:1; }
+  .task-pts{ font-size:11px; color:var(--ink-soft); font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+
+  .add-row{ display:flex; gap:8px; margin-top:6px; }
+  .add-input{ flex:1; border:none; border-radius:11px; padding:13px 14px; font-size:14px; background:var(--panel); box-shadow: inset 0 0 0 1px var(--rule); color:var(--ink); }
   .add-input:focus{ outline:none; box-shadow: inset 0 0 0 1.5px var(--accent); }
-  .add-btn{
-    border:none;
-    border-radius:11px;
-    padding:0 20px;
-    font-size:14px;
-    font-weight:700;
-    background:var(--accent);
-    color:#fff;
-    cursor:pointer;
-  }
+  .add-btn{ border:none; border-radius:11px; padding:0 20px; font-size:14px; font-weight:700; background:var(--accent); color:#fff; cursor:pointer; }
 
-  .empty-note{
-    font-size:12.5px;
-    color:var(--ink-soft);
-    text-align:center;
-    padding:20px 10px;
-  }
+  .empty-note{ font-size:12.5px; color:var(--ink-soft); text-align:center; padding:20px 10px; }
+  .footnote{ text-align:center; font-size:11.5px; color:var(--ink-soft); margin-top:26px; line-height:1.6; }
 
-  .footnote{
-    text-align:center;
-    font-size:11.5px;
-    color:var(--ink-soft);
-    margin-top:26px;
-    line-height:1.6;
-  }
+  /* ---- edit sheet ---- */
+  #editSheet{ position:fixed; inset:0; background:rgba(42,47,40,0.5); display:none; align-items:flex-end; justify-content:center; z-index:30; }
+  #editSheet.show{ display:flex; }
+  .sheet-card{ background:var(--panel); width:100%; max-width:460px; border-radius:18px 18px 0 0; padding:22px 20px calc(22px + env(safe-area-inset-bottom)); max-height:85vh; overflow-y:auto; }
+  .sheet-card h2{ font-family: ui-serif, Georgia, serif; font-size:19px; margin:0 0 16px; }
+  .field-label{ font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft); font-weight:700; margin:14px 0 6px; }
+  .field-label:first-of-type{ margin-top:0; }
+  .field-input{ width:100%; border:none; border-radius:10px; padding:12px 13px; font-size:14px; background:var(--bg); box-shadow: inset 0 0 0 1px var(--rule); color:var(--ink); }
+  .field-input:focus{ outline:none; box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .task-edit-row{ display:flex; gap:8px; margin-bottom:8px; align-items:center; }
+  .task-edit-row .field-input{ flex:1; }
+  .task-remove{ border:none; background:none; color:var(--danger); font-size:18px; line-height:1; padding:4px 8px; cursor:pointer; }
+  .add-task-link{ border:none; background:none; color:var(--accent); font-weight:700; font-size:13px; cursor:pointer; padding:6px 2px; }
+  .sheet-actions{ display:flex; gap:10px; margin-top:20px; }
+  .sheet-save{ flex:1; border:none; padding:14px 0; border-radius:11px; background:var(--accent); color:#fff; font-weight:700; font-size:14px; cursor:pointer; }
+  .sheet-cancel{ flex:1; border:none; padding:14px 0; border-radius:11px; background:transparent; box-shadow: inset 0 0 0 1px var(--rule); color:var(--ink-soft); font-weight:600; font-size:14px; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -277,7 +128,7 @@
       </div>
     </div>
     <div class="tier-track"><div class="tier-fill" id="tierFill" style="width:0%"></div></div>
-    <div class="perfect-banner" id="perfectBanner">Perfect day — every habit checked off. +2 bonus.</div>
+    <div class="perfect-banner" id="perfectBanner">Perfect day — every habit fully checked off. +2 bonus.</div>
   </div>
 
   <div class="section-row">
@@ -292,7 +143,26 @@
     <button class="add-btn" id="addHabitBtn">Add</button>
   </div>
 
-  <p class="footnote">Streaks count a day as unbroken until you've missed it entirely — so today doesn't break yesterday's run until it's actually over.</p>
+  <p class="footnote">Streaks count a day as unbroken until it's fully over — today doesn't break yesterday's run before you've had the chance to finish it.</p>
+</div>
+
+<div id="editSheet">
+  <div class="sheet-card">
+    <h2 id="editHeading">Edit habit</h2>
+    <div class="field-label">Title</div>
+    <input class="field-input" id="editTitle" type="text" maxlength="40">
+    <div class="field-label">Subtitle (optional)</div>
+    <input class="field-input" id="editSubtitle" type="text" maxlength="60">
+    <div class="field-label">Max points per day</div>
+    <input class="field-input" id="editMaxPoints" type="number" min="5" step="5">
+    <div class="field-label">Tasks</div>
+    <div id="editTasksList"></div>
+    <button class="add-task-link" id="addTaskBtn">+ Add task</button>
+    <div class="sheet-actions">
+      <button class="sheet-cancel" id="cancelEditBtn">Cancel</button>
+      <button class="sheet-save" id="saveEditBtn">Save</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -309,51 +179,106 @@
   ];
   var TRAIL_DAYS = 14;
 
+  var PRESET_POINTS = [
+    { kw:["tooth","teeth","brush"], pts:40 },
+    { kw:["water","hydrat"], pts:10 },
+    { kw:["bed","wake"], pts:10 },
+    { kw:["read","book"], pts:20 },
+    { kw:["meditat"], pts:15 },
+    { kw:["exercise","workout","gym","run","jog"], pts:50 },
+    { kw:["homework","study","school"], pts:100 },
+    { kw:["clean","tidy","chore","dish"], pts:20 },
+    { kw:["journal","diary","gratitude"], pts:15 },
+    { kw:["vitamin","medication","pill","medicine"], pts:10 },
+    { kw:["shower","bath","hygiene"], pts:15 },
+    { kw:["sleep"], pts:15 },
+    { kw:["stretch","yoga"], pts:25 },
+    { kw:["floss"], pts:15 },
+    { kw:["skincare","moistur"], pts:10 }
+  ];
+  var DEFAULT_POINTS = 25;
+
+  function lookupPoints(name){
+    var n = name.toLowerCase();
+    for (var i = 0; i < PRESET_POINTS.length; i++){
+      for (var j = 0; j < PRESET_POINTS[i].kw.length; j++){
+        if (n.indexOf(PRESET_POINTS[i].kw[j]) !== -1) return PRESET_POINTS[i].pts;
+      }
+    }
+    return DEFAULT_POINTS;
+  }
+
   var state = {
     habits: [
-      { id: "h1", name: "Brush teeth" },
-      { id: "h2", name: "Homework / study" },
-      { id: "h3", name: "Stretch" }
+      { id:"h1", type:"duo", name:"Brush teeth", maxPoints:40 },
+      { id:"h2", type:"multi", name:"Homework / Study", subtitle:"", maxPoints:100,
+        tasks:[{ id:"t1", name:"Task 1" }] },
+      { id:"h3", type:"multi", name:"Exercise", subtitle:"", maxPoints:100,
+        tasks:[{ id:"t1", name:"Task 1" }] }
     ],
-    completionLog: {},   // { "2026-08-13": ["h1","h2"] }
+    completionLog: {},   // { "2026-08-13": { "h1": ["morning"], "h2": ["t1"] } }
     longest: {}          // { "h1": 7 }
   };
   var manageMode = false;
+  var editingHabitId = null;
+  var draftTasks = [];
 
   function pad(n){ return n < 10 ? "0"+n : ""+n; }
   function fmtDate(d){ return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate()); }
   function todayStr(){ return fmtDate(new Date()); }
-  function dateOffset(days){
-    var d = new Date();
-    d.setDate(d.getDate() + days);
-    return fmtDate(d);
+  function dateOffset(days){ var d = new Date(); d.setDate(d.getDate() + days); return fmtDate(d); }
+
+  function subIdsFor(habit, date){
+    return (state.completionLog[date] && state.completionLog[date][habit.id]) || [];
   }
-  function dayList(habitId, date){
-    return (state.completionLog[date] || []).indexOf(habitId) !== -1;
+  function setSubIdsFor(habit, date, arr){
+    if (!state.completionLog[date]) state.completionLog[date] = {};
+    state.completionLog[date][habit.id] = arr;
   }
 
-  function currentStreak(habitId){
-    var streak = 0;
-    var startOffset = dayList(habitId, todayStr()) ? 0 : -1;
-    var i = startOffset;
-    while (dayList(habitId, dateOffset(i))){
-      streak++;
-      i--;
+  function requiredSubCount(habit){
+    if (habit.type === "duo") return 2;
+    if (habit.type === "multi") return (habit.tasks || []).length;
+    return 1;
+  }
+  function completedSubCount(habit, date){
+    var ids = subIdsFor(habit, date);
+    if (habit.type === "multi"){
+      return (habit.tasks || []).filter(function(t){ return ids.indexOf(t.id) !== -1; }).length;
     }
+    if (habit.type === "duo"){
+      return ["morning","evening"].filter(function(s){ return ids.indexOf(s) !== -1; }).length;
+    }
+    return ids.indexOf("done") !== -1 ? 1 : 0;
+  }
+  function pointsEarned(habit, date){
+    var req = requiredSubCount(habit);
+    if (req === 0) return 0;
+    var per = habit.maxPoints / req;
+    return completedSubCount(habit, date) * per;
+  }
+  function isComplete(habit, date){
+    var req = requiredSubCount(habit);
+    return req > 0 && completedSubCount(habit, date) === req;
+  }
+
+  function currentStreak(habit){
+    var streak = 0;
+    var startOffset = isComplete(habit, todayStr()) ? 0 : -1;
+    var i = startOffset;
+    while (isComplete(habit, dateOffset(i))){ streak++; i--; }
     return streak;
   }
 
   function totalPoints(){
-    var count = 0, bonus = 0;
+    var sum = 0, bonusDays = 0;
     Object.keys(state.completionLog).forEach(function(date){
-      var ids = state.completionLog[date];
-      count += ids.length;
-      if (state.habits.length > 0 && ids.length >= state.habits.length){
-        var allDone = state.habits.every(function(h){ return ids.indexOf(h.id) !== -1; });
-        if (allDone) bonus += 2;
+      state.habits.forEach(function(h){ sum += pointsEarned(h, date); });
+      if (state.habits.length > 0 && state.habits.every(function(h){ return isComplete(h, date); })){
+        bonusDays++;
       }
     });
-    return count + bonus;
+    return Math.round(sum + bonusDays * 2);
   }
 
   function tierFor(points){
@@ -365,9 +290,7 @@
     return { current: current, next: next };
   }
 
-  function save(){
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
-  }
+  function save(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){} }
   function load(){
     try{
       var raw = localStorage.getItem(STORAGE_KEY);
@@ -378,42 +301,116 @@
     }catch(e){}
   }
 
-  function toggleHabitToday(habitId){
-    var t = todayStr();
-    if (!state.completionLog[t]) state.completionLog[t] = [];
-    var idx = state.completionLog[t].indexOf(habitId);
-    if (idx === -1){
-      state.completionLog[t].push(habitId);
-    } else {
-      state.completionLog[t].splice(idx, 1);
-    }
-    var s = currentStreak(habitId);
-    if (!state.longest[habitId] || s > state.longest[habitId]) state.longest[habitId] = s;
+  function afterChange(habit){
+    var s = currentStreak(habit);
+    if (!state.longest[habit.id] || s > state.longest[habit.id]) state.longest[habit.id] = s;
     save();
     render();
+  }
+
+  function toggleSimple(habit){
+    var t = todayStr();
+    var ids = subIdsFor(habit, t).slice();
+    var i = ids.indexOf("done");
+    if (i === -1) ids.push("done"); else ids.splice(i, 1);
+    setSubIdsFor(habit, t, ids);
+    afterChange(habit);
+  }
+  function toggleSub(habit, subId){
+    var t = todayStr();
+    var ids = subIdsFor(habit, t).slice();
+    var i = ids.indexOf(subId);
+    if (i === -1) ids.push(subId); else ids.splice(i, 1);
+    setSubIdsFor(habit, t, ids);
+    afterChange(habit);
   }
 
   function addHabit(name){
     name = name.trim();
     if (!name) return;
     var id = "h" + Date.now();
-    state.habits.push({ id: id, name: name });
+    state.habits.push({ id:id, type:"simple", name:name, maxPoints: lookupPoints(name) });
     save();
     render();
   }
-
   function removeHabit(habitId){
     state.habits = state.habits.filter(function(h){ return h.id !== habitId; });
     save();
     render();
   }
 
-  function els(tag, cls, html){
+  function el(tag, cls, html){
     var e = document.createElement(tag);
     if (cls) e.className = cls;
     if (html !== undefined) e.innerHTML = html;
     return e;
   }
+
+  // ---- edit sheet ----
+  var sheetEl = document.getElementById("editSheet");
+  var titleInput = document.getElementById("editTitle");
+  var subtitleInput = document.getElementById("editSubtitle");
+  var maxPointsInput = document.getElementById("editMaxPoints");
+  var tasksListEl = document.getElementById("editTasksList");
+
+  function renderDraftTasks(){
+    tasksListEl.innerHTML = "";
+    draftTasks.forEach(function(task, idx){
+      var row = el("div", "task-edit-row");
+      var input = el("input", "field-input");
+      input.type = "text";
+      input.maxLength = 40;
+      input.value = task.name;
+      input.addEventListener("input", function(){ draftTasks[idx].name = this.value; });
+      var rm = el("button", "task-remove", "×");
+      rm.addEventListener("click", function(){
+        draftTasks.splice(idx, 1);
+        renderDraftTasks();
+      });
+      row.appendChild(input);
+      row.appendChild(rm);
+      tasksListEl.appendChild(row);
+    });
+  }
+
+  function openEditSheet(habit){
+    editingHabitId = habit.id;
+    document.getElementById("editHeading").textContent = "Edit " + habit.name;
+    titleInput.value = habit.name;
+    subtitleInput.value = habit.subtitle || "";
+    maxPointsInput.value = habit.maxPoints;
+    draftTasks = (habit.tasks || []).map(function(t){ return { id:t.id, name:t.name }; });
+    renderDraftTasks();
+    sheetEl.classList.add("show");
+  }
+  function closeEditSheet(){
+    sheetEl.classList.remove("show");
+    editingHabitId = null;
+  }
+  document.getElementById("addTaskBtn").addEventListener("click", function(){
+    draftTasks.push({ id:"t" + Date.now() + Math.floor(Math.random()*1000), name:"" });
+    renderDraftTasks();
+  });
+  document.getElementById("cancelEditBtn").addEventListener("click", closeEditSheet);
+  document.getElementById("saveEditBtn").addEventListener("click", function(){
+    var habit = state.habits.filter(function(h){ return h.id === editingHabitId; })[0];
+    if (!habit) { closeEditSheet(); return; }
+    var title = titleInput.value.trim();
+    var cleanTasks = draftTasks.map(function(t){ return { id:t.id, name:t.name.trim() }; })
+      .filter(function(t){ return t.name.length > 0; });
+    if (!title || cleanTasks.length === 0){
+      alert("A title and at least one task are required.");
+      return;
+    }
+    habit.name = title;
+    habit.subtitle = subtitleInput.value.trim();
+    var mp = parseInt(maxPointsInput.value, 10);
+    habit.maxPoints = isNaN(mp) || mp <= 0 ? 100 : mp;
+    habit.tasks = cleanTasks;
+    save();
+    closeEditSheet();
+    render();
+  });
 
   function render(){
     var pts = totalPoints();
@@ -433,54 +430,93 @@
       fillEl.style.width = "100%";
     }
 
-    var todayIds = state.completionLog[todayStr()] || [];
-    var perfect = state.habits.length > 0 && state.habits.every(function(h){ return todayIds.indexOf(h.id) !== -1; });
+    var today = todayStr();
+    var perfect = state.habits.length > 0 && state.habits.every(function(h){ return isComplete(h, today); });
     document.getElementById("perfectBanner").classList.toggle("show", perfect);
 
     var list = document.getElementById("habitList");
     list.innerHTML = "";
 
     if (state.habits.length === 0){
-      list.appendChild(els("div", "empty-note", "No habits yet — add your first one below."));
+      list.appendChild(el("div", "empty-note", "No habits yet — add your first one below."));
     }
 
     state.habits.forEach(function(h){
-      var doneToday = todayIds.indexOf(h.id) !== -1;
-      var streak = currentStreak(h.id);
+      var streak = currentStreak(h);
       var longest = state.longest[h.id] || 0;
+      var earnedToday = Math.round(pointsEarned(h, today));
 
-      var card = els("div", "habit-card");
+      var card = el("div", "habit-card");
 
-      var top = els("div", "habit-top");
-      var left = els("div");
-      left.appendChild(els("div", "habit-name", h.name));
-      left.appendChild(els("div", "habit-meta", "longest streak: " + longest + (longest === 1 ? " day" : " days")));
+      var top = el("div", "habit-top");
+      var left = el("div");
+      var titleWrap = el("div", "habit-title-wrap");
+      titleWrap.appendChild(el("div", "habit-name", h.name));
+      if (h.type === "multi"){
+        var editBtn = el("button", "edit-icon", "✎");
+        editBtn.addEventListener("click", function(){ openEditSheet(h); });
+        titleWrap.appendChild(editBtn);
+      }
+      left.appendChild(titleWrap);
+      if (h.type === "multi" && h.subtitle) left.appendChild(el("div", "habit-subtitle", h.subtitle));
+      left.appendChild(el("div", "habit-meta", "longest streak: " + longest + (longest === 1 ? " day" : " days")));
       top.appendChild(left);
 
-      var right = els("div", "", "");
-      right.style.textAlign = "right";
-      var badge = els("div", "streak-badge", streak > 0 ? (streak + (streak === 1 ? " day" : " days")) : "—");
-      right.appendChild(badge);
+      var right = el("div");
+      right.appendChild(el("div", "streak-badge", streak > 0 ? (streak + (streak === 1 ? " day" : " days")) : "—"));
+      right.appendChild(el("div", "points-today", earnedToday + "/" + h.maxPoints + " pts"));
       if (manageMode){
-        var rm = els("button", "remove-btn", "Remove");
+        var rm = el("button", "remove-btn", "Remove");
         rm.addEventListener("click", function(){ removeHabit(h.id); });
         right.appendChild(rm);
       }
       top.appendChild(right);
       card.appendChild(top);
 
-      var trail = els("div", "dot-trail");
+      var trail = el("div", "dot-trail");
       for (var i = -(TRAIL_DAYS-1); i <= 0; i++){
         var ds = dateOffset(i);
-        var filled = dayList(h.id, ds);
-        var dot = els("div", "dot" + (filled ? " filled" : "") + (i === 0 ? " today" : ""));
-        trail.appendChild(dot);
+        var full = isComplete(h, ds);
+        var some = completedSubCount(h, ds) > 0;
+        var cls = "dot" + (full ? " filled" : (some ? " partial" : "")) + (i === 0 ? " today" : "");
+        trail.appendChild(el("div", cls));
       }
       card.appendChild(trail);
 
-      var btn = els("button", "mark-btn" + (doneToday ? " done" : ""), doneToday ? "Done today ✓" : "Mark done today");
-      btn.addEventListener("click", function(){ toggleHabitToday(h.id); });
-      card.appendChild(btn);
+      if (h.type === "simple"){
+        var doneToday = completedSubCount(h, today) > 0;
+        var btn = el("button", "mark-btn" + (doneToday ? " done" : ""), doneToday ? "Done today ✓" : "Mark done today");
+        btn.addEventListener("click", function(){ toggleSimple(h); });
+        card.appendChild(btn);
+      } else if (h.type === "duo"){
+        var row = el("div", "subrow");
+        [["morning","Morning"], ["evening","Evening"]].forEach(function(pair){
+          var subId = pair[0], label = pair[1];
+          var ids = subIdsFor(h, today);
+          var done = ids.indexOf(subId) !== -1;
+          var pill = el("button", "sub-pill" + (done ? " done" : ""), label + (done ? " ✓" : ""));
+          pill.addEventListener("click", function(){ toggleSub(h, subId); });
+          row.appendChild(pill);
+        });
+        card.appendChild(row);
+      } else if (h.type === "multi"){
+        var ids = subIdsFor(h, today);
+        var tl = el("div", "task-list");
+        var perTask = h.tasks.length > 0 ? Math.round(h.maxPoints / h.tasks.length) : 0;
+        h.tasks.forEach(function(task){
+          var done = ids.indexOf(task.id) !== -1;
+          var trow = el("div", "task-row" + (done ? " done" : ""));
+          var check = el("div", "task-check", done ? "✓" : "");
+          var name = el("div", "task-name", task.name);
+          var pt = el("div", "task-pts", perTask + " pt" + (perTask===1?"":"s"));
+          trow.appendChild(check);
+          trow.appendChild(name);
+          trow.appendChild(pt);
+          trow.addEventListener("click", function(){ toggleSub(h, task.id); });
+          tl.appendChild(trow);
+        });
+        card.appendChild(tl);
+      }
 
       list.appendChild(card);
     });
@@ -492,10 +528,7 @@
     input.value = "";
   });
   document.getElementById("newHabitInput").addEventListener("keydown", function(e){
-    if (e.key === "Enter"){
-      addHabit(this.value);
-      this.value = "";
-    }
+    if (e.key === "Enter"){ addHabit(this.value); this.value = ""; }
   });
   document.getElementById("manageBtn").addEventListener("click", function(){
     manageMode = !manageMode;
