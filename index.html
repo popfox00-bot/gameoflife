@@ -90,6 +90,30 @@
   .add-input:focus{ outline:none; box-shadow: inset 0 0 0 1.5px var(--accent); }
   .add-btn{ border:none; border-radius:11px; padding:0 20px; font-size:14px; font-weight:700; background:var(--accent); color:#fff; cursor:pointer; }
 
+  .suggest-panel{
+    display:none;
+    margin-top:8px;
+    background:var(--panel);
+    border-radius:12px;
+    box-shadow: inset 0 0 0 1px var(--rule);
+    overflow:hidden;
+  }
+  .suggest-panel.show{ display:block; }
+  .suggest-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 14px;
+    font-size:13.5px;
+    cursor:pointer;
+    border-bottom:1px solid var(--rule);
+  }
+  .suggest-row:last-child{ border-bottom:none; }
+  .suggest-row:active{ background:var(--accent-soft); }
+  .suggest-name{ font-weight:600; }
+  .suggest-pts{ font-size:11px; color:var(--ink-soft); font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .suggest-empty{ padding:14px; font-size:12.5px; color:var(--ink-soft); text-align:center; }
+
   .empty-note{ font-size:12.5px; color:var(--ink-soft); text-align:center; padding:20px 10px; }
   .footnote{ text-align:center; font-size:11.5px; color:var(--ink-soft); margin-top:26px; line-height:1.6; }
 
@@ -142,6 +166,7 @@
     <input class="add-input" id="newHabitInput" type="text" placeholder="Add a habit…" maxlength="40">
     <button class="add-btn" id="addHabitBtn">Add</button>
   </div>
+  <div id="suggestPanel" class="suggest-panel"></div>
 
   <p class="footnote">Streaks count a day as unbroken until it's fully over — today doesn't break yesterday's run before you've had the chance to finish it.</p>
 </div>
@@ -208,6 +233,42 @@
     return DEFAULT_POINTS;
   }
 
+  // Built-in habit templates. These always exist in the app's code, independent
+  // of whether the person currently has them added — deleting one from your
+  // active list doesn't remove it from this pool, so it can be re-added later.
+  var HABIT_TEMPLATES = [
+    { name:"Brush teeth", type:"duo", maxPoints:40 },
+    { name:"Homework / Study", type:"multi", subtitle:"", maxPoints:100, tasks:[{ id:"t1", name:"Task 1" }] },
+    { name:"Exercise", type:"multi", subtitle:"", maxPoints:100, tasks:[{ id:"t1", name:"Task 1" }] },
+    { name:"Drink water", type:"simple", maxPoints:10 },
+    { name:"Reading", type:"simple", maxPoints:20 },
+    { name:"Meditation", type:"simple", maxPoints:15 },
+    { name:"Tidy up", type:"simple", maxPoints:20 },
+    { name:"Journal", type:"simple", maxPoints:15 },
+    { name:"Vitamins", type:"simple", maxPoints:10 },
+    { name:"Shower", type:"simple", maxPoints:15 },
+    { name:"Consistent bedtime", type:"simple", maxPoints:15 },
+    { name:"Floss", type:"simple", maxPoints:15 },
+    { name:"Skincare", type:"simple", maxPoints:10 }
+  ];
+
+  function templateToHabit(tpl){
+    var fresh = { id:"h" + Date.now() + Math.floor(Math.random()*1000), type:tpl.type, name:tpl.name, maxPoints:tpl.maxPoints };
+    if (tpl.type === "multi"){
+      fresh.subtitle = tpl.subtitle || "";
+      fresh.tasks = (tpl.tasks || [{ name:"Task 1" }]).map(function(t, i){
+        return { id:"t" + (i+1), name:t.name };
+      });
+    }
+    return fresh;
+  }
+
+  // templates not already present among current habits (case-insensitive name match)
+  function availableTemplates(){
+    var activeNames = state.habits.map(function(h){ return h.name.toLowerCase().trim(); });
+    return HABIT_TEMPLATES.filter(function(t){ return activeNames.indexOf(t.name.toLowerCase()) === -1; });
+  }
+
   var state = {
     habits: [
       { id:"h1", type:"duo", name:"Brush teeth", maxPoints:40 },
@@ -252,9 +313,8 @@
     return ids.indexOf("done") !== -1 ? 1 : 0;
   }
   function pointsEarned(habit, date){
-    var req = requiredSubCount(habit);
-    if (req === 0) return 0;
-    var per = habit.maxPoints / req;
+    var req = requiredSubCount(habit) || 1;
+    var per = (habit.maxPoints || 0) / req;
     return completedSubCount(habit, date) * per;
   }
   function isComplete(habit, date){
@@ -328,8 +388,17 @@
   function addHabit(name){
     name = name.trim();
     if (!name) return;
-    var id = "h" + Date.now();
-    state.habits.push({ id:id, type:"simple", name:name, maxPoints: lookupPoints(name) });
+    var exactTpl = HABIT_TEMPLATES.filter(function(t){ return t.name.toLowerCase() === name.toLowerCase(); })[0];
+    if (exactTpl){
+      state.habits.push(templateToHabit(exactTpl));
+    } else {
+      state.habits.push({ id:"h" + Date.now(), type:"simple", name:name, maxPoints: lookupPoints(name) });
+    }
+    save();
+    render();
+  }
+  function addFromTemplate(tpl){
+    state.habits.push(templateToHabit(tpl));
     save();
     render();
   }
@@ -522,13 +591,70 @@
     });
   }
 
+  // ---- default-habit suggestion picker ----
+  var newHabitInput = document.getElementById("newHabitInput");
+  var suggestPanel = document.getElementById("suggestPanel");
+  var panelOpen = false;
+
+  function renderSuggestPanel(matches){
+    suggestPanel.innerHTML = "";
+    if (matches.length === 0){
+      suggestPanel.appendChild(el("div", "suggest-empty", "No matching defaults — press Add to create it as a new habit."));
+      return;
+    }
+    matches.forEach(function(tpl){
+      var row = el("div", "suggest-row");
+      row.appendChild(el("div", "suggest-name", tpl.name));
+      row.appendChild(el("div", "suggest-pts", tpl.maxPoints + " pts"));
+      row.addEventListener("click", function(){
+        addFromTemplate(tpl);
+        newHabitInput.value = "";
+        closePanel();
+      });
+      suggestPanel.appendChild(row);
+    });
+  }
+  function openPanel(matches){
+    panelOpen = true;
+    renderSuggestPanel(matches);
+    suggestPanel.classList.add("show");
+  }
+  function closePanel(){
+    panelOpen = false;
+    suggestPanel.classList.remove("show");
+  }
+  function matchingTemplates(query){
+    var q = query.trim().toLowerCase();
+    var avail = availableTemplates();
+    if (q === "") return avail;
+    return avail.filter(function(t){ return t.name.toLowerCase().indexOf(q) !== -1; });
+  }
+
   document.getElementById("addHabitBtn").addEventListener("click", function(){
-    var input = document.getElementById("newHabitInput");
-    addHabit(input.value);
-    input.value = "";
+    var text = newHabitInput.value.trim();
+    if (text === ""){
+      openPanel(availableTemplates());
+      return;
+    }
+    addHabit(text);
+    newHabitInput.value = "";
+    closePanel();
   });
-  document.getElementById("newHabitInput").addEventListener("keydown", function(e){
-    if (e.key === "Enter"){ addHabit(this.value); this.value = ""; }
+  newHabitInput.addEventListener("keydown", function(e){
+    if (e.key === "Enter"){
+      addHabit(this.value);
+      this.value = "";
+      closePanel();
+    }
+  });
+  newHabitInput.addEventListener("input", function(){
+    var matches = matchingTemplates(this.value);
+    if (this.value.trim() !== "" && matches.length > 0){
+      openPanel(matches);
+    } else if (panelOpen){
+      // keep an already-open panel in sync, including showing "no matches"
+      renderSuggestPanel(matches);
+    }
   });
   document.getElementById("manageBtn").addEventListener("click", function(){
     manageMode = !manageMode;
