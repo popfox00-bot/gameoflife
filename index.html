@@ -43,6 +43,15 @@
 
   /* ---- calendar page ---- */
   .cal-since{ font-size:12px; color:var(--ink-soft); margin:0 2px 16px; }
+  .cal-tabs{ display:flex; gap:8px; margin:18px 0 18px; }
+  .cal-tab{ flex:1; border:none; background:var(--panel); box-shadow: inset 0 0 0 1px var(--rule); color:var(--ink-soft); font-size:13px; font-weight:700; padding:11px 0; border-radius:11px; cursor:pointer; }
+  .cal-tab.active{ background:var(--ink); color:#fff; box-shadow:none; }
+  .history-card{ background:var(--panel); border-radius:14px; padding:16px; margin-bottom:12px; box-shadow: inset 0 0 0 1px var(--rule); }
+  .history-name{ font-size:15px; font-weight:700; margin-bottom:4px; }
+  .history-range{ font-size:12px; color:var(--ink-soft); margin-bottom:10px; }
+  .history-stats{ display:flex; gap:18px; }
+  .history-stat-num{ font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size:16px; font-weight:700; }
+  .history-stat-label{ font-size:10.5px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.06em; }
   .cal-filter-row{ display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px; -webkit-overflow-scrolling:touch; }
   .cal-filter-row::-webkit-scrollbar{ display:none; }
   .cal-pill{ flex-shrink:0; border:none; box-shadow: inset 0 0 0 1.5px var(--rule); background:var(--panel); color:var(--ink-soft); font-size:12.5px; font-weight:600; padding:9px 14px; border-radius:999px; cursor:pointer; white-space:nowrap; }
@@ -238,40 +247,61 @@
     </button>
     <div>
       <p class="eyebrow">Habit Ledger</p>
-      <h1>Calendar</h1>
+      <h1 id="calPageTitle">Calendar</h1>
     </div>
   </div>
-  <p class="cal-since" id="calSince"></p>
 
-  <div class="cal-filter-row" id="calFilterRow"></div>
-
-  <div class="cal-month-nav">
-    <button class="cal-nav-btn" id="calPrevBtn">‹</button>
-    <div class="cal-month-label" id="calMonthLabel"></div>
-    <button class="cal-nav-btn" id="calNextBtn">›</button>
+  <div class="cal-tabs">
+    <button class="cal-tab active" id="calTabCalendar">Calendar</button>
+    <button class="cal-tab" id="calTabHistory">History</button>
   </div>
 
-  <div class="cal-weekdays">
-    <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
-  </div>
-  <div class="cal-grid" id="calGrid"></div>
+  <div id="calendarViewBlock">
+    <p class="cal-since" id="calSince"></p>
 
-  <div class="cal-day-detail" id="calDayDetail"></div>
+    <div class="cal-filter-row" id="calFilterRow"></div>
+
+    <div class="cal-month-nav">
+      <button class="cal-nav-btn" id="calPrevBtn">‹</button>
+      <div class="cal-month-label" id="calMonthLabel"></div>
+      <button class="cal-nav-btn" id="calNextBtn">›</button>
+    </div>
+
+    <div class="cal-weekdays">
+      <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+
+    <div class="cal-day-detail" id="calDayDetail"></div>
+  </div>
+
+  <div id="historyViewBlock" style="display:none;">
+    <p class="cal-since">Habits that have finished tracking (past their end date) live here. Their past days still show up on the Calendar.</p>
+    <div id="historyList"></div>
+  </div>
 </div>
 </div>
+
 
 <div id="editSheet">
   <div class="sheet-card">
     <h2 id="editHeading">Edit habit</h2>
     <div class="field-label">Title</div>
     <input class="field-input" id="editTitle" type="text" maxlength="40">
-    <div class="field-label">Subtitle (optional)</div>
-    <input class="field-input" id="editSubtitle" type="text" maxlength="60">
+    <div id="editSubtitleBlock">
+      <div class="field-label">Subtitle (optional)</div>
+      <input class="field-input" id="editSubtitle" type="text" maxlength="60">
+    </div>
     <div class="field-label">Max points per day</div>
     <input class="field-input" id="editMaxPoints" type="number" min="5" step="5">
-    <div class="field-label">Tasks</div>
-    <div id="editTasksList"></div>
-    <button class="add-task-link" id="addTaskBtn">+ Add task</button>
+    <div class="field-label">End date (optional)</div>
+    <input class="field-input" id="editEndDate" type="date">
+    <button class="add-task-link" id="clearEndDateBtn">Clear end date</button>
+    <div id="editTasksBlock">
+      <div class="field-label">Tasks</div>
+      <div id="editTasksList"></div>
+      <button class="add-task-link" id="addTaskBtn">+ Add task</button>
+    </div>
     <div class="sheet-actions">
       <button class="sheet-cancel" id="cancelEditBtn">Cancel</button>
       <button class="sheet-save" id="saveEditBtn">Save</button>
@@ -282,7 +312,9 @@
 <div id="typeSheet">
   <div class="sheet-card">
     <h2>Add "<span id="typeSheetName"></span>"</h2>
-    <p class="sheet-subtext">Is this something you check off once, or several times a day?</p>
+    <div class="field-label">End date (optional)</div>
+    <input class="field-input" id="typeSheetEndDate" type="date">
+    <p class="sheet-subtext" style="margin-top:16px;">Is this something you check off once, or several times a day?</p>
     <div class="type-choice-row" id="typeChoiceRow">
       <button class="type-choice-btn" id="chooseSingle">
         <span class="type-choice-title">Single</span>
@@ -303,6 +335,7 @@
     </div>
     <button class="sheet-cancel" id="cancelTypeSheet" style="width:100%; margin-top:14px;">Cancel</button>
   </div>
+
 </div>
 
 <script>
@@ -369,7 +402,7 @@
   ];
 
   function templateToHabit(tpl){
-    var fresh = { id:"h" + Date.now() + Math.floor(Math.random()*1000), type:tpl.type, name:tpl.name, maxPoints:tpl.maxPoints };
+    var fresh = { id:"h" + Date.now() + Math.floor(Math.random()*1000), type:tpl.type, name:tpl.name, maxPoints:tpl.maxPoints, createdAt:todayStr(), endDate:null };
     if (tpl.type === "multi"){
       fresh.subtitle = tpl.subtitle || "";
       fresh.tasks = (tpl.tasks || [{ name:"Task 1" }]).map(function(t, i){
@@ -390,11 +423,11 @@
 
   var state = {
     habits: [
-      { id:"h1", type:"duo", name:"Brush teeth", maxPoints:40,
+      { id:"h1", type:"duo", name:"Brush teeth", maxPoints:40, createdAt:null, endDate:null,
         subs:[{ id:"morning", label:"Morning" }, { id:"evening", label:"Evening" }] },
-      { id:"h2", type:"multi", name:"Homework / Study", subtitle:"", maxPoints:100,
+      { id:"h2", type:"multi", name:"Homework / Study", subtitle:"", maxPoints:100, createdAt:null, endDate:null,
         tasks:[{ id:"t1", name:"Task 1" }] },
-      { id:"h3", type:"multi", name:"Exercise", subtitle:"", maxPoints:100,
+      { id:"h3", type:"multi", name:"Exercise", subtitle:"", maxPoints:100, createdAt:null, endDate:null,
         tasks:[{ id:"t1", name:"Task 1" }] }
     ],
     completionLog: {},   // { "2026-08-13": { "h1": ["morning"], "h2": ["t1"] } }
@@ -450,11 +483,33 @@
     return streak;
   }
 
+  // Was this habit "in force" on a given date — i.e. created by then and not yet past its end date?
+  // Missing createdAt/endDate means "no boundary on that side" (covers pre-existing habits with no dates set).
+  function isActiveOn(habit, dateStr){
+    if (habit.createdAt && dateStr < habit.createdAt) return false;
+    if (habit.endDate && dateStr > habit.endDate) return false;
+    return true;
+  }
+  function activeHabitsOn(dateStr){
+    return state.habits.filter(function(h){ return isActiveOn(h, dateStr); });
+  }
+  function isExpired(habit){
+    return !!(habit.endDate && habit.endDate < todayStr());
+  }
+  function totalPointsForHabit(habitId){
+    var habit = state.habits.filter(function(h){ return h.id === habitId; })[0];
+    if (!habit) return 0;
+    var sum = 0;
+    Object.keys(state.completionLog).forEach(function(date){ sum += pointsEarned(habit, date); });
+    return Math.round(sum);
+  }
+
   function totalPoints(){
     var sum = 0, bonusDays = 0;
     Object.keys(state.completionLog).forEach(function(date){
-      state.habits.forEach(function(h){ sum += pointsEarned(h, date); });
-      if (state.habits.length > 0 && state.habits.every(function(h){ return isComplete(h, date); })){
+      var activeThatDay = activeHabitsOn(date);
+      activeThatDay.forEach(function(h){ sum += pointsEarned(h, date); });
+      if (activeThatDay.length > 0 && activeThatDay.every(function(h){ return isComplete(h, date); })){
         bonusDays++;
       }
     });
@@ -479,6 +534,27 @@
         if (parsed && parsed.habits) state = parsed;
       }
     }catch(e){}
+    repairHabits();
+  }
+
+  // Self-heals habits saved by older versions of this app that are missing
+  // fields the current code expects (e.g. a duo habit with no `subs` array).
+  // Runs on every load so a schema addition never again silently breaks a
+  // habit that already existed on someone's phone.
+  function repairHabits(){
+    state.habits.forEach(function(h){
+      if (h.type === "duo" && (!h.subs || h.subs.length === 0)){
+        h.subs = [{ id:"morning", label:"Morning" }, { id:"evening", label:"Evening" }];
+      }
+      if (h.type === "multi" && (!h.tasks || h.tasks.length === 0)){
+        h.tasks = [{ id:"t1", name:"Task 1" }];
+      }
+      if (typeof h.maxPoints !== "number" || isNaN(h.maxPoints)){
+        h.maxPoints = lookupPoints(h.name || "");
+      }
+      if (h.createdAt === undefined) h.createdAt = null;
+      if (h.endDate === undefined) h.endDate = null;
+    });
   }
 
   function afterChange(habit){
@@ -517,15 +593,15 @@
       openTypeSheet(name);
     }
   }
-  function addSimpleCustom(name){
-    state.habits.push({ id:"h" + Date.now(), type:"simple", name:name, maxPoints: lookupPoints(name) });
+  function addSimpleCustom(name, endDate){
+    state.habits.push({ id:"h" + Date.now(), type:"simple", name:name, maxPoints: lookupPoints(name), createdAt:todayStr(), endDate: endDate || null });
     save();
     render();
   }
-  function addMultiCheckCustom(name, count){
+  function addMultiCheckCustom(name, count, endDate){
     var subs = [];
     for (var i = 1; i <= count; i++) subs.push({ id:"c" + i, label:"Check " + i });
-    state.habits.push({ id:"h" + Date.now(), type:"duo", name:name, maxPoints: lookupPoints(name), subs:subs });
+    state.habits.push({ id:"h" + Date.now(), type:"duo", name:name, maxPoints: lookupPoints(name), subs:subs, createdAt:todayStr(), endDate: endDate || null });
     save();
     render();
   }
@@ -540,12 +616,18 @@
     render();
   }
   function moveHabit(habitId, delta){
-    var idx = state.habits.findIndex(function(h){ return h.id === habitId; });
-    var newIdx = idx + delta;
-    if (idx === -1 || newIdx < 0 || newIdx >= state.habits.length) return;
-    var tmp = state.habits[idx];
-    state.habits[idx] = state.habits[newIdx];
-    state.habits[newIdx] = tmp;
+    // reorder within today's visible (active) habits, ignoring expired ones
+    // that are hidden from the list but still occupy slots in state.habits
+    var activeList = activeHabitsOn(todayStr());
+    var posInActive = activeList.findIndex(function(h){ return h.id === habitId; });
+    var targetPos = posInActive + delta;
+    if (posInActive === -1 || targetPos < 0 || targetPos >= activeList.length) return;
+    var otherId = activeList[targetPos].id;
+    var idxA = state.habits.findIndex(function(h){ return h.id === habitId; });
+    var idxB = state.habits.findIndex(function(h){ return h.id === otherId; });
+    var tmp = state.habits[idxA];
+    state.habits[idxA] = state.habits[idxB];
+    state.habits[idxB] = tmp;
     save();
     render();
   }
@@ -590,8 +672,12 @@
     titleInput.value = habit.name;
     subtitleInput.value = habit.subtitle || "";
     maxPointsInput.value = habit.maxPoints;
+    document.getElementById("editEndDate").value = habit.endDate || "";
     draftTasks = (habit.tasks || []).map(function(t){ return { id:t.id, name:t.name }; });
     renderDraftTasks();
+    var isMulti = habit.type === "multi";
+    document.getElementById("editSubtitleBlock").style.display = isMulti ? "block" : "none";
+    document.getElementById("editTasksBlock").style.display = isMulti ? "block" : "none";
     sheetEl.classList.add("show");
   }
   function closeEditSheet(){
@@ -602,22 +688,34 @@
     draftTasks.push({ id:"t" + Date.now() + Math.floor(Math.random()*1000), name:"" });
     renderDraftTasks();
   });
+  document.getElementById("clearEndDateBtn").addEventListener("click", function(){
+    document.getElementById("editEndDate").value = "";
+  });
   document.getElementById("cancelEditBtn").addEventListener("click", closeEditSheet);
   document.getElementById("saveEditBtn").addEventListener("click", function(){
     var habit = state.habits.filter(function(h){ return h.id === editingHabitId; })[0];
     if (!habit) { closeEditSheet(); return; }
     var title = titleInput.value.trim();
-    var cleanTasks = draftTasks.map(function(t){ return { id:t.id, name:t.name.trim() }; })
-      .filter(function(t){ return t.name.length > 0; });
-    if (!title || cleanTasks.length === 0){
-      alert("A title and at least one task are required.");
-      return;
+    if (habit.type === "multi"){
+      var cleanTasks = draftTasks.map(function(t){ return { id:t.id, name:t.name.trim() }; })
+        .filter(function(t){ return t.name.length > 0; });
+      if (!title || cleanTasks.length === 0){
+        alert("A title and at least one task are required.");
+        return;
+      }
+      habit.subtitle = subtitleInput.value.trim();
+      habit.tasks = cleanTasks;
+    } else {
+      if (!title){
+        alert("A title is required.");
+        return;
+      }
     }
     habit.name = title;
-    habit.subtitle = subtitleInput.value.trim();
     var mp = parseInt(maxPointsInput.value, 10);
-    habit.maxPoints = isNaN(mp) || mp <= 0 ? 100 : mp;
-    habit.tasks = cleanTasks;
+    habit.maxPoints = isNaN(mp) || mp <= 0 ? habit.maxPoints : mp;
+    var endVal = document.getElementById("editEndDate").value;
+    habit.endDate = endVal ? endVal : null;
     save();
     closeEditSheet();
     render();
@@ -626,6 +724,7 @@
   // ---- type-choice sheet for brand-new custom habits ----
   var typeSheetEl = document.getElementById("typeSheet");
   var typeSheetNameEl = document.getElementById("typeSheetName");
+  var typeSheetEndDateInput = document.getElementById("typeSheetEndDate");
   var typeChoiceRow = document.getElementById("typeChoiceRow");
   var multiCountBlock = document.getElementById("multiCountBlock");
   var multiCountInput = document.getElementById("multiCountInput");
@@ -634,6 +733,7 @@
   function openTypeSheet(name){
     pendingHabitName = name;
     typeSheetNameEl.textContent = name;
+    typeSheetEndDateInput.value = "";
     typeChoiceRow.style.display = "flex";
     multiCountBlock.style.display = "none";
     typeSheetEl.classList.add("show");
@@ -643,7 +743,7 @@
     pendingHabitName = "";
   }
   document.getElementById("chooseSingle").addEventListener("click", function(){
-    addSimpleCustom(pendingHabitName);
+    addSimpleCustom(pendingHabitName, typeSheetEndDateInput.value);
     closeTypeSheet();
   });
   document.getElementById("chooseMultiple").addEventListener("click", function(){
@@ -658,7 +758,7 @@
     var count = parseInt(multiCountInput.value, 10);
     if (isNaN(count) || count < 2) count = 2;
     if (count > 8) count = 8;
-    addMultiCheckCustom(pendingHabitName, count);
+    addMultiCheckCustom(pendingHabitName, count, typeSheetEndDateInput.value);
     closeTypeSheet();
   });
   document.getElementById("cancelTypeSheet").addEventListener("click", closeTypeSheet);
@@ -683,17 +783,18 @@
     }
 
     var today = todayStr();
-    var perfect = state.habits.length > 0 && state.habits.every(function(h){ return isComplete(h, today); });
+    var activeToday = activeHabitsOn(today);
+    var perfect = activeToday.length > 0 && activeToday.every(function(h){ return isComplete(h, today); });
     document.getElementById("perfectBanner").classList.toggle("show", perfect);
 
     var list = document.getElementById("habitList");
     list.innerHTML = "";
 
-    if (state.habits.length === 0){
+    if (activeToday.length === 0){
       list.appendChild(el("div", "empty-note", "No habits yet — add your first one below."));
     }
 
-    state.habits.forEach(function(h, idx){
+    activeToday.forEach(function(h, idx){
       var streak = currentStreak(h);
       var longest = state.longest[h.id] || 0;
       var earnedToday = Math.round(pointsEarned(h, today));
@@ -704,13 +805,12 @@
       var left = el("div");
       var titleWrap = el("div", "habit-title-wrap");
       titleWrap.appendChild(el("div", "habit-name", h.name));
-      if (h.type === "multi"){
-        var editBtn = el("button", "edit-icon", "✎");
-        editBtn.addEventListener("click", function(){ openEditSheet(h); });
-        titleWrap.appendChild(editBtn);
-      }
+      var editBtn = el("button", "edit-icon", "✎");
+      editBtn.addEventListener("click", function(){ openEditSheet(h); });
+      titleWrap.appendChild(editBtn);
       left.appendChild(titleWrap);
       if (h.type === "multi" && h.subtitle) left.appendChild(el("div", "habit-subtitle", h.subtitle));
+      if (h.endDate) left.appendChild(el("div", "habit-meta", "tracked through " + h.endDate));
       left.appendChild(el("div", "habit-meta", "longest streak: " + longest + (longest === 1 ? " day" : " days")));
       top.appendChild(left);
 
@@ -720,9 +820,9 @@
       if (manageMode){
         var reorder = el("div", "reorder-row");
         var upBtn = el("button", "reorder-btn" + (idx === 0 ? " disabled" : ""), "↑");
-        var downBtn = el("button", "reorder-btn" + (idx === state.habits.length - 1 ? " disabled" : ""), "↓");
+        var downBtn = el("button", "reorder-btn" + (idx === activeToday.length - 1 ? " disabled" : ""), "↓");
         if (idx !== 0) upBtn.addEventListener("click", function(){ moveHabit(h.id, -1); });
-        if (idx !== state.habits.length - 1) downBtn.addEventListener("click", function(){ moveHabit(h.id, 1); });
+        if (idx !== activeToday.length - 1) downBtn.addEventListener("click", function(){ moveHabit(h.id, 1); });
         reorder.appendChild(upBtn);
         reorder.appendChild(downBtn);
         right.appendChild(reorder);
@@ -872,11 +972,11 @@
   }
 
   function buildOverallGradient(ds){
-    var habits = state.habits;
+    var habits = activeHabitsOn(ds);
     if (habits.length === 0) return "var(--dot-empty)";
     var n = habits.length, seg = 360 / n, stops = [];
     habits.forEach(function(h, i){
-      var color = isComplete(h, ds) ? pieColor(i) : "var(--dot-empty)";
+      var color = isComplete(h, ds) ? pieColor(state.habits.indexOf(h)) : "var(--dot-empty)";
       stops.push(color + " " + (i*seg).toFixed(2) + "deg " + ((i+1)*seg).toFixed(2) + "deg");
     });
     return "conic-gradient(" + stops.join(", ") + ")";
@@ -900,11 +1000,50 @@
     calendarState.selectedDate = todayStr();
     document.getElementById("mainPage").style.display = "none";
     document.getElementById("calendarPage").style.display = "block";
-    renderCalendar();
+    showCalTab("calendar");
   }
   function closeCalendar(){
     document.getElementById("calendarPage").style.display = "none";
     document.getElementById("mainPage").style.display = "block";
+  }
+
+  function showCalTab(which){
+    var isCal = which === "calendar";
+    document.getElementById("calTabCalendar").classList.toggle("active", isCal);
+    document.getElementById("calTabHistory").classList.toggle("active", !isCal);
+    document.getElementById("calendarViewBlock").style.display = isCal ? "block" : "none";
+    document.getElementById("historyViewBlock").style.display = isCal ? "none" : "block";
+    document.getElementById("calPageTitle").textContent = isCal ? "Calendar" : "History";
+    if (isCal) renderCalendar(); else renderHistory();
+  }
+  document.getElementById("calTabCalendar").addEventListener("click", function(){ showCalTab("calendar"); });
+  document.getElementById("calTabHistory").addEventListener("click", function(){ showCalTab("history"); });
+
+  function renderHistory(){
+    var list = document.getElementById("historyList");
+    list.innerHTML = "";
+    var expired = state.habits.filter(isExpired);
+    if (expired.length === 0){
+      list.appendChild(el("div", "empty-note", "No expired habits yet — set an end date on any habit's edit screen to retire it here later."));
+      return;
+    }
+    expired.forEach(function(h){
+      var card = el("div", "history-card");
+      card.appendChild(el("div", "history-name", h.name));
+      var rangeText = (h.createdAt ? h.createdAt : "the start") + " – " + h.endDate;
+      card.appendChild(el("div", "history-range", "Tracked " + rangeText));
+      var stats = el("div", "history-stats");
+      var s1 = el("div");
+      s1.appendChild(el("div", "history-stat-num", (state.longest[h.id] || 0) + ""));
+      s1.appendChild(el("div", "history-stat-label", "longest streak"));
+      var s2 = el("div");
+      s2.appendChild(el("div", "history-stat-num", totalPointsForHabit(h.id) + ""));
+      s2.appendChild(el("div", "history-stat-label", "points earned"));
+      stats.appendChild(s1);
+      stats.appendChild(s2);
+      card.appendChild(stats);
+      list.appendChild(card);
+    });
   }
 
   function renderCalendarFilters(){
@@ -914,7 +1053,8 @@
     overallPill.addEventListener("click", function(){ calendarState.filter = "overall"; renderCalendar(); });
     row.appendChild(overallPill);
     state.habits.forEach(function(h){
-      var pill = el("button", "cal-pill" + (calendarState.filter === h.id ? " active" : ""), h.name);
+      var label = h.name + (isExpired(h) ? " (ended)" : "");
+      var pill = el("button", "cal-pill" + (calendarState.filter === h.id ? " active" : ""), label);
       pill.addEventListener("click", function(){ calendarState.filter = h.id; renderCalendar(); });
       row.appendChild(pill);
     });
@@ -926,17 +1066,18 @@
     var d = new Date(ds + "T00:00:00");
     var label = d.toLocaleDateString(undefined, { weekday:"long", month:"long", day:"numeric" });
     box.appendChild(el("div", "cal-day-label", label));
-    if (state.habits.length === 0){
-      box.appendChild(el("div", "empty-note", "No habits yet."));
+    var habitsThatDay = activeHabitsOn(ds);
+    if (habitsThatDay.length === 0){
+      box.appendChild(el("div", "empty-note", "No habits tracked this day."));
       return;
     }
     var totalEarned = 0;
-    state.habits.forEach(function(h, i){
+    habitsThatDay.forEach(function(h){
       var earned = Math.round(pointsEarned(h, ds));
       totalEarned += earned;
       var row = el("div", "cal-detail-row");
       var dot = el("span", "cal-detail-dot");
-      dot.style.background = isComplete(h, ds) ? pieColor(i) : "var(--dot-empty)";
+      dot.style.background = isComplete(h, ds) ? pieColor(state.habits.indexOf(h)) : "var(--dot-empty)";
       row.appendChild(dot);
       row.appendChild(el("span", "cal-detail-name", h.name));
       row.appendChild(el("span", "cal-detail-pts", earned + "/" + h.maxPoints));
@@ -976,13 +1117,16 @@
       cell.appendChild(el("div", "cal-daynum", String(d)));
 
       var indicator = el("div", "cal-indicator");
+      var filterHabit = calendarState.filter === "overall" ? null :
+        state.habits.filter(function(hh){ return hh.id === calendarState.filter; })[0];
       var inRange = ds >= since && ds <= todayS;
+      // for a specific habit's filter, also dim any day outside that habit's own active window
+      if (inRange && filterHabit) inRange = isActiveOn(filterHabit, ds);
       if (inRange){
         if (calendarState.filter === "overall"){
           indicator.style.background = buildOverallGradient(ds);
         } else {
-          var h = state.habits.filter(function(hh){ return hh.id === calendarState.filter; })[0];
-          indicator.style.background = h ? buildSingleGradient(h, ds) : "var(--dot-empty)";
+          indicator.style.background = filterHabit ? buildSingleGradient(filterHabit, ds) : "var(--dot-empty)";
         }
         (function(dsClosure){
           cell.addEventListener("click", function(){
