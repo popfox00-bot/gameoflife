@@ -36,6 +36,37 @@
 
   .eyebrow{ font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-soft); font-weight:600; margin:0 0 4px 2px; }
   h1{ font-family: ui-serif, Georgia, "Times New Roman", serif; font-size:28px; font-weight:600; letter-spacing:-0.01em; margin:0 0 20px 2px; }
+  .top-bar{ display:flex; align-items:flex-start; gap:12px; }
+  .top-bar h1{ margin-top:0; }
+  .icon-btn{ border:none; background:var(--panel); box-shadow: inset 0 0 0 1px var(--rule); width:40px; height:40px; border-radius:12px; color:var(--ink); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; margin-top:1px; }
+  .icon-btn:active{ background:var(--accent-soft); }
+
+  /* ---- calendar page ---- */
+  .cal-since{ font-size:12px; color:var(--ink-soft); margin:0 2px 16px; }
+  .cal-filter-row{ display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px; -webkit-overflow-scrolling:touch; }
+  .cal-filter-row::-webkit-scrollbar{ display:none; }
+  .cal-pill{ flex-shrink:0; border:none; box-shadow: inset 0 0 0 1.5px var(--rule); background:var(--panel); color:var(--ink-soft); font-size:12.5px; font-weight:600; padding:9px 14px; border-radius:999px; cursor:pointer; white-space:nowrap; }
+  .cal-pill.active{ background:var(--ink); color:#fff; box-shadow:none; }
+  .cal-month-nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .cal-nav-btn{ border:none; background:var(--panel); box-shadow: inset 0 0 0 1px var(--rule); width:34px; height:34px; border-radius:10px; font-size:18px; color:var(--ink); cursor:pointer; }
+  .cal-nav-btn.disabled{ opacity:0.3; pointer-events:none; }
+  .cal-month-label{ font-family: ui-serif, Georgia, serif; font-size:16px; font-weight:600; }
+  .cal-weekdays{ display:grid; grid-template-columns:repeat(7,1fr); text-align:center; font-size:10.5px; color:var(--ink-soft); font-weight:700; letter-spacing:0.06em; margin-bottom:4px; }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:2px; margin-bottom:18px; }
+  .cal-cell{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:6px 0; border-radius:10px; cursor:default; }
+  .cal-cell:not(.empty){ cursor:pointer; }
+  .cal-cell.selected{ background:var(--accent-soft); }
+  .cal-daynum{ font-size:11px; color:var(--ink-soft); font-weight:600; }
+  .cal-cell.today .cal-daynum{ color:var(--accent); font-weight:700; }
+  .cal-indicator{ width:20px; height:20px; border-radius:50%; background:var(--dot-empty); }
+  .cal-indicator.out-of-range{ opacity:0.35; }
+  .cal-day-detail{ background:var(--panel); border-radius:14px; padding:16px; box-shadow: inset 0 0 0 1px var(--rule); }
+  .cal-day-label{ font-family: ui-serif, Georgia, serif; font-size:15px; font-weight:600; margin-bottom:12px; }
+  .cal-detail-row{ display:flex; align-items:center; gap:10px; padding:7px 0; font-size:13px; }
+  .cal-detail-dot{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .cal-detail-name{ flex:1; }
+  .cal-detail-pts{ font-size:11px; color:var(--ink-soft); font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .cal-detail-total{ margin-top:8px; padding-top:10px; border-top:1px solid var(--rule); font-size:12.5px; font-weight:700; text-align:right; }
 
   .ledger-header{ background:var(--panel); border-radius:16px; padding:20px 20px 18px; box-shadow: inset 0 0 0 1px var(--rule); margin-bottom:22px; }
   .points-row{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:10px; }
@@ -157,8 +188,16 @@
 </head>
 <body>
 <div id="app">
-  <p class="eyebrow">Habit Ledger</p>
-  <h1>Today's entries</h1>
+<div id="mainPage">
+  <div class="top-bar">
+    <button class="icon-btn" id="calendarBtn" aria-label="View calendar">
+      <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2.5"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>
+    </button>
+    <div>
+      <p class="eyebrow">Habit Ledger</p>
+      <h1>Today's entries</h1>
+    </div>
+  </div>
 
   <div class="ledger-header">
     <div class="points-row">
@@ -175,6 +214,7 @@
     <div class="perfect-banner" id="perfectBanner">Perfect day — every habit fully checked off. +2 bonus.</div>
   </div>
 
+
   <div class="section-row" id="sectionRow">
     <div class="section-title">Habits</div>
     <button class="manage-link" id="manageBtn">Manage</button>
@@ -189,6 +229,35 @@
   <div id="suggestPanel" class="suggest-panel"></div>
 
   <p class="footnote">Streaks count a day as unbroken until it's fully over — today doesn't break yesterday's run before you've had the chance to finish it.</p>
+</div>
+
+<div id="calendarPage" style="display:none;">
+  <div class="top-bar">
+    <button class="icon-btn" id="backToHome" aria-label="Back">
+      <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    </button>
+    <div>
+      <p class="eyebrow">Habit Ledger</p>
+      <h1>Calendar</h1>
+    </div>
+  </div>
+  <p class="cal-since" id="calSince"></p>
+
+  <div class="cal-filter-row" id="calFilterRow"></div>
+
+  <div class="cal-month-nav">
+    <button class="cal-nav-btn" id="calPrevBtn">‹</button>
+    <div class="cal-month-label" id="calMonthLabel"></div>
+    <button class="cal-nav-btn" id="calNextBtn">›</button>
+  </div>
+
+  <div class="cal-weekdays">
+    <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+  </div>
+  <div class="cal-grid" id="calGrid"></div>
+
+  <div class="cal-day-detail" id="calDayDetail"></div>
+</div>
 </div>
 
 <div id="editSheet">
@@ -787,6 +856,163 @@
     this.classList.toggle("active", manageMode);
     this.textContent = manageMode ? "Done" : "Manage";
     render();
+  });
+
+  // ---- calendar page ----
+  var PIE_COLORS = ["#3F6B4A","#B8863B","#5C7A99","#A65C4B","#7B6C9E","#5E8C7A","#C18B3F","#8A5A7A"];
+  function pieColor(i){ return PIE_COLORS[i % PIE_COLORS.length]; }
+
+  var calendarState = { viewYear:0, viewMonth:0, filter:"overall", selectedDate:"" };
+
+  function startDateStr(){
+    var keys = Object.keys(state.completionLog);
+    if (keys.length === 0) return todayStr();
+    keys.sort();
+    return keys[0];
+  }
+
+  function buildOverallGradient(ds){
+    var habits = state.habits;
+    if (habits.length === 0) return "var(--dot-empty)";
+    var n = habits.length, seg = 360 / n, stops = [];
+    habits.forEach(function(h, i){
+      var color = isComplete(h, ds) ? pieColor(i) : "var(--dot-empty)";
+      stops.push(color + " " + (i*seg).toFixed(2) + "deg " + ((i+1)*seg).toFixed(2) + "deg");
+    });
+    return "conic-gradient(" + stops.join(", ") + ")";
+  }
+  function buildSingleGradient(h, ds){
+    var idx = state.habits.indexOf(h);
+    var req = requiredSubCount(h) || 1;
+    var done = completedSubCount(h, ds);
+    var frac = done / req;
+    if (frac <= 0) return "var(--dot-empty)";
+    if (frac >= 1) return pieColor(idx);
+    var deg = (frac*360).toFixed(2) + "deg";
+    return "conic-gradient(" + pieColor(idx) + " 0deg " + deg + ", var(--dot-empty) " + deg + " 360deg)";
+  }
+
+  function openCalendar(){
+    var now = new Date();
+    calendarState.viewYear = now.getFullYear();
+    calendarState.viewMonth = now.getMonth();
+    calendarState.filter = "overall";
+    calendarState.selectedDate = todayStr();
+    document.getElementById("mainPage").style.display = "none";
+    document.getElementById("calendarPage").style.display = "block";
+    renderCalendar();
+  }
+  function closeCalendar(){
+    document.getElementById("calendarPage").style.display = "none";
+    document.getElementById("mainPage").style.display = "block";
+  }
+
+  function renderCalendarFilters(){
+    var row = document.getElementById("calFilterRow");
+    row.innerHTML = "";
+    var overallPill = el("button", "cal-pill" + (calendarState.filter === "overall" ? " active" : ""), "Overall");
+    overallPill.addEventListener("click", function(){ calendarState.filter = "overall"; renderCalendar(); });
+    row.appendChild(overallPill);
+    state.habits.forEach(function(h){
+      var pill = el("button", "cal-pill" + (calendarState.filter === h.id ? " active" : ""), h.name);
+      pill.addEventListener("click", function(){ calendarState.filter = h.id; renderCalendar(); });
+      row.appendChild(pill);
+    });
+  }
+
+  function renderDayDetail(ds){
+    var box = document.getElementById("calDayDetail");
+    box.innerHTML = "";
+    var d = new Date(ds + "T00:00:00");
+    var label = d.toLocaleDateString(undefined, { weekday:"long", month:"long", day:"numeric" });
+    box.appendChild(el("div", "cal-day-label", label));
+    if (state.habits.length === 0){
+      box.appendChild(el("div", "empty-note", "No habits yet."));
+      return;
+    }
+    var totalEarned = 0;
+    state.habits.forEach(function(h, i){
+      var earned = Math.round(pointsEarned(h, ds));
+      totalEarned += earned;
+      var row = el("div", "cal-detail-row");
+      var dot = el("span", "cal-detail-dot");
+      dot.style.background = isComplete(h, ds) ? pieColor(i) : "var(--dot-empty)";
+      row.appendChild(dot);
+      row.appendChild(el("span", "cal-detail-name", h.name));
+      row.appendChild(el("span", "cal-detail-pts", earned + "/" + h.maxPoints));
+      box.appendChild(row);
+    });
+    box.appendChild(el("div", "cal-detail-total", "Total: " + totalEarned + " pts"));
+  }
+
+  function renderCalendar(){
+    var since = startDateStr();
+    var sinceLabel = new Date(since + "T00:00:00").toLocaleDateString(undefined, { month:"long", day:"numeric", year:"numeric" });
+    document.getElementById("calSince").textContent = "Tracking since " + sinceLabel;
+
+    renderCalendarFilters();
+
+    var monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    document.getElementById("calMonthLabel").textContent = monthNames[calendarState.viewMonth] + " " + calendarState.viewYear;
+
+    var now = new Date();
+    var atCurrent = calendarState.viewYear === now.getFullYear() && calendarState.viewMonth === now.getMonth();
+    document.getElementById("calNextBtn").classList.toggle("disabled", atCurrent);
+
+    var grid = document.getElementById("calGrid");
+    grid.innerHTML = "";
+    var firstOfMonth = new Date(calendarState.viewYear, calendarState.viewMonth, 1);
+    var startWeekday = firstOfMonth.getDay();
+    var daysInMonth = new Date(calendarState.viewYear, calendarState.viewMonth + 1, 0).getDate();
+    var todayS = todayStr();
+
+    for (var i = 0; i < startWeekday; i++){ grid.appendChild(el("div", "cal-cell empty")); }
+
+    for (var d = 1; d <= daysInMonth; d++){
+      var ds = calendarState.viewYear + "-" + pad(calendarState.viewMonth+1) + "-" + pad(d);
+      var cell = el("div", "cal-cell");
+      if (ds === calendarState.selectedDate) cell.classList.add("selected");
+      if (ds === todayS) cell.classList.add("today");
+      cell.appendChild(el("div", "cal-daynum", String(d)));
+
+      var indicator = el("div", "cal-indicator");
+      var inRange = ds >= since && ds <= todayS;
+      if (inRange){
+        if (calendarState.filter === "overall"){
+          indicator.style.background = buildOverallGradient(ds);
+        } else {
+          var h = state.habits.filter(function(hh){ return hh.id === calendarState.filter; })[0];
+          indicator.style.background = h ? buildSingleGradient(h, ds) : "var(--dot-empty)";
+        }
+        (function(dsClosure){
+          cell.addEventListener("click", function(){
+            calendarState.selectedDate = dsClosure;
+            renderCalendar();
+          });
+        })(ds);
+      } else {
+        indicator.classList.add("out-of-range");
+      }
+      cell.appendChild(indicator);
+      grid.appendChild(cell);
+    }
+
+    renderDayDetail(calendarState.selectedDate);
+  }
+
+  document.getElementById("calendarBtn").addEventListener("click", openCalendar);
+  document.getElementById("backToHome").addEventListener("click", closeCalendar);
+  document.getElementById("calPrevBtn").addEventListener("click", function(){
+    calendarState.viewMonth--;
+    if (calendarState.viewMonth < 0){ calendarState.viewMonth = 11; calendarState.viewYear--; }
+    renderCalendar();
+  });
+  document.getElementById("calNextBtn").addEventListener("click", function(){
+    var now = new Date();
+    if (calendarState.viewYear === now.getFullYear() && calendarState.viewMonth === now.getMonth()) return;
+    calendarState.viewMonth++;
+    if (calendarState.viewMonth > 11){ calendarState.viewMonth = 0; calendarState.viewYear++; }
+    renderCalendar();
   });
 
   load();
