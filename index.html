@@ -134,10 +134,15 @@
   .sub-pill.done{ background:var(--accent); color:#fff; box-shadow:none; }
 
   .task-list{ display:flex; flex-direction:column; gap:8px; }
-  .task-row{ display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:10px; background:var(--bg); cursor:pointer; }
-  .task-row.done{ background:var(--accent-soft); }
-  .task-check{ width:20px; height:20px; border-radius:6px; box-shadow: inset 0 0 0 1.5px var(--accent); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; color:#fff; }
-  .task-row.done .task-check{ background:var(--accent); }
+  .task-row{ display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:10px; background:var(--bg); cursor:pointer; transition:background .15s ease; }
+  .task-check{
+    width:26px; height:26px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:800; color:#fff;
+    box-shadow:0 1px 3px rgba(0,0,0,0.22), inset 0 0 0 1px rgba(255,255,255,0.25);
+    opacity:0.4; transition:opacity .15s ease, transform .15s ease;
+  }
+  .task-row.done .task-check{ opacity:1; transform:scale(1.05); }
   .task-name{ font-size:13.5px; flex:1; }
   .task-pts{ font-size:11px; color:var(--ink-soft); font-family: ui-monospace, "SF Mono", Menlo, monospace; }
 
@@ -216,7 +221,7 @@
     <div class="points-row">
       <div>
         <div class="points-num" id="pointsNum">0</div>
-        <div class="points-label">total points</div>
+        <div class="points-label">points today</div>
       </div>
       <div>
         <div class="tier-name" id="tierName">Starting Out</div>
@@ -347,12 +352,13 @@
   "use strict";
 
   var STORAGE_KEY = "habitLedger";
-  var TIERS = [
-    { min:0,   name:"Starting Out" },
-    { min:25,  name:"Building the Habit" },
-    { min:100, name:"Consistent" },
-    { min:250, name:"Dedicated" },
-    { min:500, name:"Ironclad" }
+  // Daily tiers reset every day, based only on points earned *today* — not lifetime
+  // cumulative points. Steps every 50 points; the name list can be extended freely,
+  // and anything beyond the named list just keeps counting at the same 50pt step.
+  var DAILY_TIER_STEP = 50;
+  var DAILY_TIER_NAMES = [
+    "Starting Out", "Warming Up", "On a Roll", "Dialed In", "Peak Day",
+    "Locked In", "Unstoppable", "Legendary Day", "Off the Charts"
   ];
   var TRAIL_DAYS = 14;
 
@@ -371,7 +377,23 @@
     { kw:["sleep"], pts:15 },
     { kw:["stretch","yoga"], pts:25 },
     { kw:["floss"], pts:15 },
-    { kw:["skincare","moistur"], pts:10 }
+    { kw:["skincare","moistur"], pts:10 },
+    { kw:["walk"], pts:20 },
+    { kw:["cook","meal prep","meal"], pts:20 },
+    { kw:["healthy eat","diet","junk food"], pts:25 },
+    { kw:["screen time","phone","social media","scroll"], pts:20 },
+    { kw:["instrument","piano","guitar","practice"], pts:25 },
+    { kw:["language","duolingo","spanish","french"], pts:20 },
+    { kw:["budget","spending","finance","money"], pts:15 },
+    { kw:["family","call mom","call dad","call"], pts:15 },
+    { kw:["plan tomorrow","planning"], pts:10 },
+    { kw:["sunlight","outside","fresh air","nature"], pts:15 },
+    { kw:["alcohol","sober","no drink"], pts:20 },
+    { kw:["pray","quiet time","devotion"], pts:15 },
+    { kw:["declutter","organize"], pts:15 },
+    { kw:["laundry"], pts:15 },
+    { kw:["deep work","focus session","pomodoro"], pts:30 },
+    { kw:["kindness","compliment"], pts:15 }
   ];
   var DEFAULT_POINTS = 25;
 
@@ -402,7 +424,23 @@
     { name:"Shower", type:"simple", maxPoints:15 },
     { name:"Consistent bedtime", type:"simple", maxPoints:15 },
     { name:"Floss", type:"simple", maxPoints:15 },
-    { name:"Skincare", type:"simple", maxPoints:10 }
+    { name:"Skincare", type:"simple", maxPoints:10 },
+    { name:"Take a walk", type:"simple", maxPoints:20 },
+    { name:"Cook a meal", type:"simple", maxPoints:20 },
+    { name:"Eat healthy", type:"simple", maxPoints:25 },
+    { name:"Limit screen time", type:"simple", maxPoints:20 },
+    { name:"Practice an instrument", type:"simple", maxPoints:25 },
+    { name:"Language practice", type:"simple", maxPoints:20 },
+    { name:"Track spending", type:"simple", maxPoints:15 },
+    { name:"Call a family member", type:"simple", maxPoints:15 },
+    { name:"Plan tomorrow", type:"simple", maxPoints:10 },
+    { name:"Get sunlight", type:"simple", maxPoints:15 },
+    { name:"No alcohol", type:"simple", maxPoints:20 },
+    { name:"Quiet time", type:"simple", maxPoints:15 },
+    { name:"Declutter a space", type:"simple", maxPoints:15 },
+    { name:"Laundry", type:"simple", maxPoints:15 },
+    { name:"Deep work session", type:"simple", maxPoints:30 },
+    { name:"Act of kindness", type:"simple", maxPoints:15 }
   ];
 
   function templateToHabit(tpl){
@@ -508,24 +546,33 @@
     return Math.round(sum);
   }
 
-  function totalPoints(){
-    var sum = 0, bonusDays = 0;
-    Object.keys(state.completionLog).forEach(function(date){
-      var activeThatDay = activeHabitsOn(date);
-      activeThatDay.forEach(function(h){ sum += pointsEarned(h, date); });
-      if (activeThatDay.length > 0 && activeThatDay.every(function(h){ return isComplete(h, date); })){
-        bonusDays++;
-      }
-    });
-    return Math.round(sum + bonusDays * 2);
+  function totalPointsForDate(date){
+    var sum = 0;
+    var activeThatDay = activeHabitsOn(date);
+    activeThatDay.forEach(function(h){ sum += pointsEarned(h, date); });
+    if (activeThatDay.length > 0 && activeThatDay.every(function(h){ return isComplete(h, date); })){
+      sum += 2; // perfect-day bonus
+    }
+    return Math.round(sum);
   }
 
-  function tierFor(points){
-    var current = TIERS[0], next = null;
-    for (var i = 0; i < TIERS.length; i++){
-      if (points >= TIERS[i].min) current = TIERS[i];
-      else { next = TIERS[i]; break; }
+  function totalPoints(){
+    var sum = 0;
+    Object.keys(state.completionLog).forEach(function(date){ sum += totalPointsForDate(date); });
+    return sum;
+  }
+
+  // Which daily tier a given day's points land in, plus what's needed for the next one.
+  // Unlike the old lifetime tiers this never "tops out" — it just keeps stepping by
+  // DAILY_TIER_STEP forever, reusing the last name with a multiplier once the list runs out.
+  function tierForDaily(points){
+    var idx = Math.floor(Math.max(0, points) / DAILY_TIER_STEP);
+    var lastIdx = DAILY_TIER_NAMES.length - 1;
+    function nameFor(i){
+      return i <= lastIdx ? DAILY_TIER_NAMES[i] : (DAILY_TIER_NAMES[lastIdx] + " \u00D7" + (i - lastIdx + 1));
     }
+    var current = { min: idx * DAILY_TIER_STEP, name: nameFor(idx) };
+    var next = { min: (idx+1) * DAILY_TIER_STEP, name: nameFor(idx+1) };
     return { current: current, next: next };
   }
 
@@ -769,24 +816,19 @@
 
   function render(){
     document.getElementById("sectionRow").classList.toggle("manage-sticky", manageMode);
-    var pts = totalPoints();
-    document.getElementById("pointsNum").textContent = pts;
+    var today = todayStr();
+    var todayPts = totalPointsForDate(today);
+    document.getElementById("pointsNum").textContent = todayPts;
 
-    var t = tierFor(pts);
+    var t = tierForDaily(todayPts);
     document.getElementById("tierName").textContent = t.current.name;
     var nextEl = document.getElementById("tierNext");
     var fillEl = document.getElementById("tierFill");
-    if (t.next){
-      var span = t.next.min - t.current.min;
-      var into = pts - t.current.min;
-      nextEl.textContent = (t.next.min - pts) + " to " + t.next.name;
-      fillEl.style.width = Math.min(100, Math.round((into/span)*100)) + "%";
-    } else {
-      nextEl.textContent = "Top tier";
-      fillEl.style.width = "100%";
-    }
+    var span = t.next.min - t.current.min;
+    var into = todayPts - t.current.min;
+    nextEl.textContent = (t.next.min - todayPts) + " to " + t.next.name;
+    fillEl.style.width = Math.min(100, Math.round((into/span)*100)) + "%";
 
-    var today = todayStr();
     var activeToday = activeHabitsOn(today);
     var perfect = activeToday.length > 0 && activeToday.every(function(h){ return isComplete(h, today); });
     document.getElementById("perfectBanner").classList.toggle("show", perfect);
@@ -866,10 +908,13 @@
         var ids = subIdsFor(h, today);
         var tl = el("div", "task-list");
         var perTask = h.tasks.length > 0 ? Math.round(h.maxPoints / h.tasks.length) : 0;
-        h.tasks.forEach(function(task){
+        h.tasks.forEach(function(task, ti){
           var done = ids.indexOf(task.id) !== -1;
+          var colorIdx = idx * 3 + ti;
           var trow = el("div", "task-row" + (done ? " done" : ""));
-          var check = el("div", "task-check", done ? "✓" : "");
+          trow.style.background = done ? lightenColor(taskColor(colorIdx), 0.82) : "";
+          var check = el("div", "task-check", done ? "\u2713" : "");
+          check.style.background = taskOmbre(colorIdx);
           var name = el("div", "task-name", task.name);
           var pt = el("div", "task-pts", perTask + " pt" + (perTask===1?"":"s"));
           trow.appendChild(check);
@@ -965,6 +1010,24 @@
   // ---- calendar page ----
   var PIE_COLORS = ["#3F6B4A","#B8863B","#5C7A99","#A65C4B","#7B6C9E","#5E8C7A","#C18B3F","#8A5A7A"];
   function pieColor(i){ return PIE_COLORS[i % PIE_COLORS.length]; }
+
+  // Blends a hex color toward white by `amt` (0-1) to build the lighter end of an ombré.
+  function lightenColor(hex, amt){
+    hex = hex.replace("#","");
+    var r = parseInt(hex.substring(0,2),16);
+    var g = parseInt(hex.substring(2,4),16);
+    var b = parseInt(hex.substring(4,6),16);
+    r = Math.round(r + (255-r)*amt);
+    g = Math.round(g + (255-g)*amt);
+    b = Math.round(b + (255-b)*amt);
+    return "rgb(" + r + "," + g + "," + b + ")";
+  }
+  function taskColor(i){ return pieColor(i); }
+  // Solid color bubble with a lighter-shade ombré, top-left to bottom-right.
+  function taskOmbre(i){
+    var base = taskColor(i);
+    return "linear-gradient(135deg, " + lightenColor(base, 0.4) + ", " + base + ")";
+  }
 
   var calendarState = { viewYear:0, viewMonth:0, filter:"overall", selectedDate:"" };
 
