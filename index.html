@@ -82,6 +82,15 @@
   .cal-detail-total{ margin-top:8px; padding-top:10px; border-top:1px solid var(--rule); font-size:12.5px; font-weight:700; text-align:right; }
 
   .ledger-header{ background:var(--panel); border-radius:16px; padding:20px 20px 18px; box-shadow: inset 0 0 0 1px var(--rule); margin-bottom:22px; }
+
+  .todo-alert{
+    display:none; align-items:center; gap:6px; width:fit-content;
+    background:var(--danger); color:#fff; font-size:11px; font-weight:700;
+    letter-spacing:0.02em; padding:6px 11px 6px 9px; border-radius:999px;
+    margin:12px 0 0 2px; cursor:pointer; box-shadow:0 2px 6px rgba(176,71,63,0.35);
+  }
+  .todo-alert.show{ display:inline-flex; }
+  .todo-alert-dot{ width:6px; height:6px; border-radius:50%; background:#fff; flex-shrink:0; }
   .points-row{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:10px; }
   .points-num{ font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size:34px; font-weight:600; font-variant-numeric: tabular-nums; }
   .points-label{ font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft); font-weight:600; }
@@ -134,6 +143,8 @@
   .sub-pill.done{ background:var(--accent); color:#fff; box-shadow:none; }
 
   .task-list{ display:flex; flex-direction:column; gap:8px; }
+  .todo-remove{ border:none; background:none; color:var(--ink-soft); font-size:13px; cursor:pointer; padding:4px 6px; flex-shrink:0; }
+  .todo-remove:active{ color:var(--danger); }
   .task-row{ display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:10px; background:var(--bg); cursor:pointer; transition:background .15s ease; }
   .task-check{
     width:26px; height:26px; border-radius:50%; flex-shrink:0;
@@ -211,11 +222,16 @@
     <button class="icon-btn" id="calendarBtn" aria-label="View calendar">
       <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2.5"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>
     </button>
+    <button class="icon-btn" id="todoBtn" aria-label="View daily to-do list">
+      <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2.5"></rect><path d="M7 9.5l1.6 1.6L12 7.6"></path><line x1="14.5" y1="9" x2="18" y2="9"></line><path d="M7 15.5l1.6 1.6L12 13.6"></path><line x1="14.5" y1="15" x2="18" y2="15"></line></svg>
+    </button>
     <div>
       <p class="eyebrow">Habit Ledger</p>
       <h1>Today's entries</h1>
     </div>
   </div>
+
+  <div class="todo-alert" id="todoAlert"><span class="todo-alert-dot"></span>To-do Incomplete</div>
 
   <div class="ledger-header">
     <div class="points-row">
@@ -288,6 +304,32 @@
     <p class="cal-since">Habits that have finished tracking (past their end date) live here. Their past days still show up on the Calendar.</p>
     <div id="historyList"></div>
   </div>
+</div>
+
+<div id="todoPage" style="display:none;">
+  <div class="top-bar">
+    <button class="icon-btn" id="backFromTodo" aria-label="Back">
+      <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    </button>
+    <div>
+      <p class="eyebrow">Habit Ledger</p>
+      <h1>Daily To-do List</h1>
+    </div>
+  </div>
+
+  <p class="cal-since">Flat 15 pts each, added to today's total — not tracked on the calendar.</p>
+
+  <div class="add-row">
+    <input class="add-input" id="todoInput" type="text" placeholder="Search the bank or add a task…" maxlength="60">
+    <button class="add-btn" id="addTodoBtn">Add</button>
+  </div>
+  <div id="todoSuggestPanel" class="suggest-panel"></div>
+
+  <div class="section-row">
+    <div class="section-title">Today</div>
+  </div>
+  <p class="cal-since" id="todoCount"></p>
+  <div id="todoList" class="task-list"></div>
 </div>
 </div>
 
@@ -443,6 +485,20 @@
     { name:"Act of kindness", type:"simple", maxPoints:15 }
   ];
 
+  // Daily To-do list — flat-rate one-off tasks, separate from the recurring Habits
+  // above. Each is worth a flat 15 points toward today's total, but is intentionally
+  // NOT included in the calendar's per-habit tracking/pie charts.
+  var TODO_POINTS = 15;
+  var TODO_BANK = [
+    "Take out the trash", "Do the dishes", "Reply to emails", "Pay a bill",
+    "Water the plants", "Feed the pet", "Vacuum", "Make the bed",
+    "Grocery run", "Return a package", "Schedule an appointment", "Check the mail",
+    "Empty the dishwasher", "Sweep the floor", "Change the sheets", "Back up photos",
+    "Plan tomorrow's schedule", "Tidy the desk", "Take out recycling", "Wipe down the bathroom",
+    "Fill up the gas tank", "Wash the car", "Refill a prescription", "Charge devices overnight",
+    "Unsubscribe from junk email", "Review upcoming bills", "Restock groceries", "Clean out the fridge"
+  ];
+
   function templateToHabit(tpl){
     var fresh = { id:"h" + Date.now() + Math.floor(Math.random()*1000), type:tpl.type, name:tpl.name, maxPoints:tpl.maxPoints, createdAt:todayStr(), endDate:null };
     if (tpl.type === "multi"){
@@ -473,7 +529,8 @@
         tasks:[{ id:"t1", name:"Task 1" }] }
     ],
     completionLog: {},   // { "2026-08-13": { "h1": ["morning"], "h2": ["t1"] } }
-    longest: {}          // { "h1": 7 }
+    longest: {},         // { "h1": 7 }
+    todos: {}            // { "2026-08-13": [{ id:"td1", name:"Take out the trash", done:true }] } — daily, flat-rate, not shown in the calendar
   };
   var manageMode = false;
   var editingHabitId = null;
@@ -546,6 +603,18 @@
     return Math.round(sum);
   }
 
+  function todosForDate(date){
+    return state.todos[date] || [];
+  }
+  function todosForToday(){
+    var today = todayStr();
+    if (!state.todos[today]) state.todos[today] = [];
+    return state.todos[today];
+  }
+  function todoPointsForDate(date){
+    return todosForDate(date).filter(function(t){ return t.done; }).length * TODO_POINTS;
+  }
+
   function totalPointsForDate(date){
     var sum = 0;
     var activeThatDay = activeHabitsOn(date);
@@ -553,12 +622,16 @@
     if (activeThatDay.length > 0 && activeThatDay.every(function(h){ return isComplete(h, date); })){
       sum += 2; // perfect-day bonus
     }
+    sum += todoPointsForDate(date);
     return Math.round(sum);
   }
 
   function totalPoints(){
     var sum = 0;
-    Object.keys(state.completionLog).forEach(function(date){ sum += totalPointsForDate(date); });
+    var days = {};
+    Object.keys(state.completionLog).forEach(function(d){ days[d] = true; });
+    Object.keys(state.todos).forEach(function(d){ days[d] = true; });
+    Object.keys(days).forEach(function(date){ sum += totalPointsForDate(date); });
     return sum;
   }
 
@@ -585,6 +658,7 @@
         if (parsed && parsed.habits) state = parsed;
       }
     }catch(e){}
+    if (!state.todos) state.todos = {};
     repairHabits();
   }
 
@@ -833,6 +907,9 @@
     var perfect = activeToday.length > 0 && activeToday.every(function(h){ return isComplete(h, today); });
     document.getElementById("perfectBanner").classList.toggle("show", perfect);
 
+    var hasOpenTodo = todosForDate(today).some(function(t){ return !t.done; });
+    document.getElementById("todoAlert").classList.toggle("show", hasOpenTodo);
+
     var list = document.getElementById("habitList");
     list.innerHTML = "";
 
@@ -1006,6 +1083,154 @@
     this.textContent = manageMode ? "Done" : "Manage";
     render();
   });
+
+  // ---- daily to-do list ----
+  function addTodoItem(name){
+    var clean = name.trim();
+    if (clean === "") return;
+    todosForToday().push({ id:"td" + Date.now() + Math.floor(Math.random()*1000), name:clean, done:false });
+    save();
+    renderTodoPage();
+    render();
+  }
+  function toggleTodoItem(id){
+    var list = todosForToday();
+    var item = list.filter(function(t){ return t.id === id; })[0];
+    if (!item) return;
+    item.done = !item.done;
+    save();
+    renderTodoPage();
+    render();
+  }
+  function removeTodoItem(id){
+    state.todos[todayStr()] = todosForToday().filter(function(t){ return t.id !== id; });
+    save();
+    renderTodoPage();
+    render();
+  }
+
+  function renderTodoPage(){
+    var today = todosForToday();
+    var completedCount = today.filter(function(t){ return t.done; }).length;
+    document.getElementById("todoCount").textContent = today.length === 0
+      ? "No tasks added yet today."
+      : (completedCount + " of " + today.length + " done \u2014 " + (completedCount*TODO_POINTS) + " pts today");
+
+    var list = document.getElementById("todoList");
+    list.innerHTML = "";
+    if (today.length === 0){
+      list.appendChild(el("div", "empty-note", "Search the bank below or add your own one-off task."));
+      return;
+    }
+    today.forEach(function(item, i){
+      var row = el("div", "task-row" + (item.done ? " done" : ""));
+      row.style.background = item.done ? lightenColor(taskColor(i), 0.82) : "";
+      var check = el("div", "task-check", item.done ? "\u2713" : "");
+      check.style.background = taskOmbre(i);
+      var name = el("div", "task-name", item.name);
+      var pt = el("div", "task-pts", TODO_POINTS + " pts");
+      var rm = el("button", "todo-remove", "\u2715");
+      row.appendChild(check);
+      row.appendChild(name);
+      row.appendChild(pt);
+      row.appendChild(rm);
+      row.addEventListener("click", function(){ toggleTodoItem(item.id); });
+      rm.addEventListener("click", function(e){ e.stopPropagation(); removeTodoItem(item.id); });
+      list.appendChild(row);
+    });
+  }
+
+  // ---- to-do bank search + add (same pattern as the habit suggestion picker) ----
+  var todoInput = document.getElementById("todoInput");
+  var todoSuggestPanel = document.getElementById("todoSuggestPanel");
+  var todoPanelOpen = false;
+
+  function availableTodoBank(){
+    var activeNames = todosForToday().map(function(t){ return t.name.toLowerCase().trim(); });
+    return TODO_BANK.filter(function(name){ return activeNames.indexOf(name.toLowerCase()) === -1; });
+  }
+  function matchingTodoBank(query){
+    var q = query.trim().toLowerCase();
+    var avail = availableTodoBank();
+    if (q === "") return avail;
+    var words = q.split(/\s+/).filter(Boolean);
+    return avail.filter(function(name){
+      var n = name.toLowerCase();
+      if (n.indexOf(q) !== -1) return true;
+      return words.some(function(w){ return n.indexOf(w) !== -1; });
+    });
+  }
+  function renderTodoSuggestPanel(matches){
+    todoSuggestPanel.innerHTML = "";
+    if (matches.length === 0){
+      todoSuggestPanel.appendChild(el("div", "suggest-empty", "No matching defaults \u2014 press Add to create it as a one-off task."));
+      return;
+    }
+    matches.forEach(function(name){
+      var row = el("div", "suggest-row");
+      row.appendChild(el("div", "suggest-name", name));
+      row.appendChild(el("div", "suggest-pts", TODO_POINTS + " pts"));
+      row.addEventListener("click", function(){
+        addTodoItem(name);
+        todoInput.value = "";
+        closeTodoPanel();
+      });
+      todoSuggestPanel.appendChild(row);
+    });
+  }
+  function openTodoPanel(matches){
+    todoPanelOpen = true;
+    renderTodoSuggestPanel(matches);
+    todoSuggestPanel.classList.add("show");
+  }
+  function closeTodoPanel(){
+    todoPanelOpen = false;
+    todoSuggestPanel.classList.remove("show");
+  }
+  document.getElementById("addTodoBtn").addEventListener("click", function(){
+    var text = todoInput.value.trim();
+    if (text === ""){
+      openTodoPanel(availableTodoBank());
+      return;
+    }
+    addTodoItem(text);
+    todoInput.value = "";
+    closeTodoPanel();
+  });
+  todoInput.addEventListener("keydown", function(e){
+    if (e.key === "Enter"){
+      addTodoItem(this.value);
+      this.value = "";
+      closeTodoPanel();
+    }
+  });
+  todoInput.addEventListener("input", function(){
+    var matches = matchingTodoBank(this.value);
+    if (this.value.trim() !== "" && matches.length > 0){
+      openTodoPanel(matches);
+    } else if (todoPanelOpen){
+      renderTodoSuggestPanel(matches);
+    }
+  });
+  todoInput.addEventListener("focus", function(){
+    openTodoPanel(matchingTodoBank(this.value));
+  });
+
+  function openTodo(){
+    document.getElementById("mainPage").style.display = "none";
+    document.getElementById("todoPage").style.display = "block";
+    todoInput.value = "";
+    closeTodoPanel();
+    renderTodoPage();
+  }
+  function closeTodo(){
+    document.getElementById("todoPage").style.display = "none";
+    document.getElementById("mainPage").style.display = "block";
+    render();
+  }
+  document.getElementById("todoBtn").addEventListener("click", openTodo);
+  document.getElementById("backFromTodo").addEventListener("click", closeTodo);
+  document.getElementById("todoAlert").addEventListener("click", openTodo);
 
   // ---- calendar page ----
   var PIE_COLORS = ["#3F6B4A","#B8863B","#5C7A99","#A65C4B","#7B6C9E","#5E8C7A","#C18B3F","#8A5A7A"];
