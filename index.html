@@ -418,7 +418,7 @@
     <input class="field-input" id="editEndDate" type="date">
     <button class="add-task-link" id="clearEndDateBtn">Clear end date</button>
     <div id="editTasksBlock">
-      <div class="field-label">Tasks</div>
+      <div class="field-label" id="editTasksLabel">Tasks</div>
       <div id="editTasksList"></div>
       <button class="add-task-link" id="addTaskBtn">+ Add task</button>
     </div>
@@ -898,11 +898,16 @@
     subtitleInput.value = habit.subtitle || "";
     maxPointsInput.value = habit.maxPoints;
     document.getElementById("editEndDate").value = habit.endDate || "";
-    draftTasks = (habit.tasks || []).map(function(t){ return { id:t.id, name:t.name }; });
+    draftTasks = habit.type === "duo"
+      ? (habit.subs || []).map(function(s){ return { id:s.id, name:s.label }; })
+      : (habit.tasks || []).map(function(t){ return { id:t.id, name:t.name }; });
     renderDraftTasks();
     var isMulti = habit.type === "multi";
+    var hasSubItems = habit.type === "multi" || habit.type === "duo";
     document.getElementById("editSubtitleBlock").style.display = isMulti ? "block" : "none";
-    document.getElementById("editTasksBlock").style.display = isMulti ? "block" : "none";
+    document.getElementById("editTasksBlock").style.display = hasSubItems ? "block" : "none";
+    document.getElementById("editTasksLabel").textContent = habit.type === "duo" ? "Check-ins" : "Tasks";
+    document.getElementById("addTaskBtn").textContent = habit.type === "duo" ? "+ Add check-in" : "+ Add task";
     sheetEl.classList.add("show");
   }
   function closeEditSheet(){
@@ -921,15 +926,19 @@
     var habit = state.habits.filter(function(h){ return h.id === editingHabitId; })[0];
     if (!habit) { closeEditSheet(); return; }
     var title = titleInput.value.trim();
-    if (habit.type === "multi"){
-      var cleanTasks = draftTasks.map(function(t){ return { id:t.id, name:t.name.trim() }; })
+    if (habit.type === "multi" || habit.type === "duo"){
+      var cleanItems = draftTasks.map(function(t){ return { id:t.id, name:t.name.trim() }; })
         .filter(function(t){ return t.name.length > 0; });
-      if (!title || cleanTasks.length === 0){
-        alert("A title and at least one task are required.");
+      if (!title || cleanItems.length === 0){
+        alert("A title and at least one " + (habit.type === "duo" ? "check-in" : "task") + " are required.");
         return;
       }
-      habit.subtitle = subtitleInput.value.trim();
-      habit.tasks = cleanTasks;
+      if (habit.type === "multi"){
+        habit.subtitle = subtitleInput.value.trim();
+        habit.tasks = cleanItems;
+      } else {
+        habit.subs = cleanItems.map(function(t){ return { id:t.id, label:t.name }; });
+      }
     } else {
       if (!title){
         alert("A title is required.");
