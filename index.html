@@ -26,6 +26,19 @@
     --rule:rgba(42,47,40,0.10);
     --danger:#B0473F;
   }
+  [data-theme="dark"]{
+    --bg:#1C1A16;
+    --panel:#262319;
+    --ink:#EDE8DD;
+    --ink-soft:#9C9686;
+    --accent:#5FA173;
+    --accent-soft:#2B3A2E;
+    --gold:#D3A44F;
+    --gold-soft:#3A2F1A;
+    --dot-empty:#3A362C;
+    --rule:rgba(237,232,221,0.13);
+    --danger:#D97166;
+  }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
   body{
@@ -197,11 +210,19 @@
   .admin-banner.show{ display:flex; }
   .admin-banner button{ border:none; background:#fff; color:var(--danger); font-weight:800; font-size:11.5px; padding:8px 12px; border-radius:999px; cursor:pointer; flex-shrink:0; }
   .admin-day-row{ display:flex; align-items:center; justify-content:space-between; padding:9px 0; font-size:13px; }
+  .admin-habit-block{ padding:6px 0 10px; border-bottom:1px solid var(--rule); }
+  .admin-habit-block:last-child{ border-bottom:none; }
+  .admin-habit-block .admin-day-row{ font-weight:700; padding-bottom:4px; }
+  .admin-sub-row{ display:flex; align-items:center; justify-content:space-between; padding:6px 0 6px 12px; font-size:12.5px; color:var(--ink-soft); }
   .admin-day-toggle{ border:none; background:var(--bg); box-shadow: inset 0 0 0 1.5px var(--danger); color:var(--danger); font-weight:700; font-size:12px; padding:8px 14px; border-radius:999px; cursor:pointer; }
+  .admin-day-toggle.small{ padding:6px 12px; font-size:11px; }
   .admin-day-toggle.complete{ background:var(--accent); color:#fff; box-shadow:none; }
   .settings-card{ background:var(--panel); border-radius:14px; padding:18px 16px; margin-bottom:12px; box-shadow: inset 0 0 0 1px var(--rule); }
   .settings-card-title{ font-size:15px; font-weight:700; margin-bottom:4px; }
   .settings-card-desc{ font-size:12.5px; color:var(--ink-soft); margin-bottom:4px; }
+  .theme-toggle{ display:flex; gap:8px; margin-top:12px; }
+  .theme-toggle-btn{ flex:1; border:none; background:var(--bg); box-shadow: inset 0 0 0 1px var(--rule); color:var(--ink-soft); font-weight:700; font-size:13px; padding:11px 0; border-radius:11px; cursor:pointer; }
+  .theme-toggle-btn.active{ background:var(--ink); color:var(--panel); box-shadow:none; }
   .field-error{ color:var(--danger); font-size:12px; font-weight:600; margin-top:6px; }
   #typeSheet{ position:fixed; inset:0; background:rgba(42,47,40,0.5); display:none; align-items:flex-end; justify-content:center; z-index:30; }
   #typeSheet.show{ display:flex; }
@@ -578,7 +599,8 @@
     ],
     completionLog: {},   // { "2026-08-13": { "h1": ["morning"], "h2": ["t1"] } }
     longest: {},         // { "h1": 7 }
-    todos: {}            // { "2026-08-13": [{ id:"td1", name:"Take out the trash", done:true }] } — daily, flat-rate, not shown in the calendar
+    todos: {},           // { "2026-08-13": [{ id:"td1", name:"Take out the trash", done:true }] } — daily, flat-rate, not shown in the calendar
+    settings: { theme:"light" }
   };
   var manageMode = false;
   // Admin controls: adminMode persists (in memory only, not saved) for the rest of
@@ -628,23 +650,26 @@
     return req > 0 && completedSubCount(habit, date) === req;
   }
 
-  // Admin-only: flips a habit's completion status for an arbitrary date between fully
-  // complete (all subs/tasks marked) and fully incomplete (cleared), reusing the same
-  // storage the normal check-in flow uses so streaks/points/calendar all stay correct.
-  function adminToggleHabitComplete(habit, date){
-    var makeComplete = !isComplete(habit, date);
-    if (makeComplete){
-      var allIds = habit.type === "duo" ? (habit.subs || []).map(function(s){ return s.id; })
-        : habit.type === "multi" ? (habit.tasks || []).map(function(t){ return t.id; })
-        : ["done"];
-      setSubIdsFor(habit, date, allIds);
-    } else {
-      setSubIdsFor(habit, date, []);
-    }
+  // Admin-only: flips a single sub-item/task (or the lone "done" flag for a simple
+  // habit) for an arbitrary date, reusing the same storage the normal check-in flow
+  // uses. This is what makes partial credit possible — e.g. checking off just
+  // "Morning" on a two-part habit — rather than only ever being all-or-nothing.
+  function adminToggleSubItem(habit, date, subId){
+    var ids = subIdsFor(habit, date).slice();
+    var i = ids.indexOf(subId);
+    if (i === -1) ids.push(subId); else ids.splice(i, 1);
+    setSubIdsFor(habit, date, ids);
     var s = currentStreak(habit);
     if (!state.longest[habit.id] || s > state.longest[habit.id]) state.longest[habit.id] = s;
     save();
     renderCalendar();
+  }
+  // Returns [{id, label}] describing each individually-creditable piece of a habit —
+  // sub check-ins for duo, tasks for multi, or a single "Done" entry for simple.
+  function subItemsFor(habit){
+    if (habit.type === "duo") return (habit.subs || []).map(function(s){ return { id:s.id, label:s.label }; });
+    if (habit.type === "multi") return (habit.tasks || []).map(function(t){ return { id:t.id, label:t.name }; });
+    return [{ id:"done", label:"Done" }];
   }
 
   function currentStreak(habit){
@@ -732,6 +757,8 @@
       }
     }catch(e){}
     if (!state.todos) state.todos = {};
+    if (!state.settings) state.settings = { theme:"light" };
+    if (!state.settings.theme) state.settings.theme = "light";
     repairHabits();
   }
 
@@ -1387,6 +1414,20 @@
   function renderSettings(){
     var body = document.getElementById("settingsBody");
     body.innerHTML = "";
+
+    var appearanceCard = el("div", "settings-card");
+    appearanceCard.appendChild(el("div", "settings-card-title", "Appearance"));
+    appearanceCard.appendChild(el("div", "settings-card-desc", "Choose how the app looks."));
+    var toggleRow = el("div", "theme-toggle");
+    var lightBtn = el("button", "theme-toggle-btn" + (state.settings.theme === "light" ? " active" : ""), "Light");
+    var darkBtn = el("button", "theme-toggle-btn" + (state.settings.theme === "dark" ? " active" : ""), "Dark");
+    lightBtn.addEventListener("click", function(){ setTheme("light"); });
+    darkBtn.addEventListener("click", function(){ setTheme("dark"); });
+    toggleRow.appendChild(lightBtn);
+    toggleRow.appendChild(darkBtn);
+    appearanceCard.appendChild(toggleRow);
+    body.appendChild(appearanceCard);
+
     var card = el("div", "settings-card");
     if (!adminMode){
       card.appendChild(el("div", "settings-card-title", "Admin"));
@@ -1411,6 +1452,18 @@
       card.appendChild(exitBtn);
     }
     body.appendChild(card);
+  }
+
+  function applyTheme(theme){
+    document.documentElement.setAttribute("data-theme", theme);
+    var metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) metaTheme.setAttribute("content", theme === "dark" ? "#1C1A16" : "#F1EDE1");
+  }
+  function setTheme(theme){
+    state.settings.theme = theme;
+    save();
+    applyTheme(theme);
+    renderSettings();
   }
 
   function openAdminLoginSheet(){
@@ -1526,13 +1579,25 @@
 
     if (adminEditingHistory){
       habitsThatDay.forEach(function(h){
-        var complete = isComplete(h, ds);
-        var row = el("div", "admin-day-row");
-        row.appendChild(el("div", "cal-detail-name", h.name));
-        var toggle = el("button", "admin-day-toggle" + (complete ? " complete" : ""), complete ? "Complete" : "Incomplete");
-        toggle.addEventListener("click", function(){ adminToggleHabitComplete(h, ds); });
-        row.appendChild(toggle);
-        box.appendChild(row);
+        var earned = Math.round(pointsEarned(h, ds));
+        var block = el("div", "admin-habit-block");
+        var header = el("div", "admin-day-row");
+        header.appendChild(el("div", "cal-detail-name", h.name));
+        header.appendChild(el("div", "cal-detail-pts", earned + "/" + h.maxPoints));
+        block.appendChild(header);
+
+        subItemsFor(h).forEach(function(item){
+          var doneIds = subIdsFor(h, ds);
+          var done = doneIds.indexOf(item.id) !== -1;
+          var subRow = el("div", "admin-sub-row");
+          subRow.appendChild(el("div", "admin-sub-label", item.label));
+          var toggle = el("button", "admin-day-toggle small" + (done ? " complete" : ""), done ? "Done" : "Not done");
+          toggle.addEventListener("click", function(){ adminToggleSubItem(h, ds, item.id); });
+          subRow.appendChild(toggle);
+          block.appendChild(subRow);
+        });
+
+        box.appendChild(block);
       });
       return;
     }
@@ -1644,6 +1709,7 @@
   });
 
   load();
+  applyTheme(state.settings.theme);
   render();
 })();
 </script>
