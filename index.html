@@ -192,8 +192,21 @@
   /* ---- edit sheet ---- */
   #editSheet{ position:fixed; inset:0; background:rgba(42,47,40,0.5); display:none; align-items:flex-end; justify-content:center; z-index:30; }
   #editSheet.show{ display:flex; }
+
+  .admin-banner{ display:none; align-items:center; justify-content:space-between; gap:10px; background:var(--danger); color:#fff; padding:10px 10px 10px 14px; border-radius:12px; margin-bottom:16px; font-size:12px; font-weight:800; letter-spacing:0.03em; }
+  .admin-banner.show{ display:flex; }
+  .admin-banner button{ border:none; background:#fff; color:var(--danger); font-weight:800; font-size:11.5px; padding:8px 12px; border-radius:999px; cursor:pointer; flex-shrink:0; }
+  .admin-day-row{ display:flex; align-items:center; justify-content:space-between; padding:9px 0; font-size:13px; }
+  .admin-day-toggle{ border:none; background:var(--bg); box-shadow: inset 0 0 0 1.5px var(--danger); color:var(--danger); font-weight:700; font-size:12px; padding:8px 14px; border-radius:999px; cursor:pointer; }
+  .admin-day-toggle.complete{ background:var(--accent); color:#fff; box-shadow:none; }
+  .settings-card{ background:var(--panel); border-radius:14px; padding:18px 16px; margin-bottom:12px; box-shadow: inset 0 0 0 1px var(--rule); }
+  .settings-card-title{ font-size:15px; font-weight:700; margin-bottom:4px; }
+  .settings-card-desc{ font-size:12.5px; color:var(--ink-soft); margin-bottom:4px; }
+  .field-error{ color:var(--danger); font-size:12px; font-weight:600; margin-top:6px; }
   #typeSheet{ position:fixed; inset:0; background:rgba(42,47,40,0.5); display:none; align-items:flex-end; justify-content:center; z-index:30; }
   #typeSheet.show{ display:flex; }
+  #adminLoginSheet{ position:fixed; inset:0; background:rgba(42,47,40,0.5); display:none; align-items:flex-end; justify-content:center; z-index:30; }
+  #adminLoginSheet.show{ display:flex; }
   .sheet-subtext{ font-size:12.5px; color:var(--ink-soft); margin:0 0 16px; line-height:1.5; }
   .type-choice-row{ display:flex; gap:10px; }
   .type-choice-btn{ flex:1; border:none; background:var(--bg); box-shadow: inset 0 0 0 1px var(--rule); border-radius:12px; padding:16px 12px; text-align:left; cursor:pointer; display:flex; flex-direction:column; gap:4px; }
@@ -224,6 +237,9 @@
     </button>
     <button class="icon-btn" id="todoBtn" aria-label="View daily to-do list">
       <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2.5"></rect><path d="M7 9.5l1.6 1.6L12 7.6"></path><line x1="14.5" y1="9" x2="18" y2="9"></line><path d="M7 15.5l1.6 1.6L12 13.6"></path><line x1="14.5" y1="15" x2="18" y2="15"></line></svg>
+    </button>
+    <button class="icon-btn" id="settingsBtn" aria-label="Settings">
+      <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 13.5a7.4 7.4 0 000-3l2-1.5-2-3.4-2.3.9a7.6 7.6 0 00-2.6-1.5L14.1 2.7h-4l-.4 2.3a7.6 7.6 0 00-2.6 1.5l-2.3-.9-2 3.4 2 1.5a7.4 7.4 0 000 3l-2 1.6 2 3.4 2.3-.9c.8.6 1.7 1.1 2.6 1.5l.4 2.3h4l.4-2.3c.9-.4 1.8-.9 2.6-1.5l2.3.9 2-3.4-2-1.6z"></path></svg>
     </button>
     <div>
       <p class="eyebrow">Habit Ledger</p>
@@ -274,6 +290,11 @@
       <p class="eyebrow">Habit Ledger</p>
       <h1 id="calPageTitle">Calendar</h1>
     </div>
+  </div>
+
+  <div class="admin-banner" id="adminBanner">
+    <span>ADMIN — Editing History</span>
+    <button id="submitAdminChangesBtn">Submit Changes</button>
   </div>
 
   <div class="cal-tabs">
@@ -331,6 +352,33 @@
   <p class="cal-since" id="todoCount"></p>
   <div id="todoList" class="task-list"></div>
 </div>
+
+<div id="settingsPage" style="display:none;">
+  <div class="top-bar">
+    <button class="icon-btn" id="backFromSettings" aria-label="Back">
+      <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    </button>
+    <div>
+      <p class="eyebrow">Habit Ledger</p>
+      <h1>Settings</h1>
+    </div>
+  </div>
+
+  <div id="settingsBody"></div>
+</div>
+</div>
+
+<div id="adminLoginSheet">
+  <div class="sheet-card">
+    <h2>Admin Login</h2>
+    <div class="field-label">Password</div>
+    <input class="field-input" id="adminPasswordInput" type="password" autocomplete="off">
+    <div class="field-error" id="adminLoginError" style="display:none;">Incorrect password.</div>
+    <div class="sheet-actions">
+      <button class="sheet-cancel" id="cancelAdminLogin">Cancel</button>
+      <button class="sheet-save" id="submitAdminLogin">Login</button>
+    </div>
+  </div>
 </div>
 
 
@@ -533,6 +581,12 @@
     todos: {}            // { "2026-08-13": [{ id:"td1", name:"Take out the trash", done:true }] } — daily, flat-rate, not shown in the calendar
   };
   var manageMode = false;
+  // Admin controls: adminMode persists (in memory only, not saved) for the rest of
+  // this browser session once logged in; adminEditingHistory is only true while the
+  // calendar page is specifically open in the "Edit History" admin flow.
+  var ADMIN_PASSWORD = "Cheese812";
+  var adminMode = false;
+  var adminEditingHistory = false;
   var editingHabitId = null;
   var draftTasks = [];
 
@@ -572,6 +626,25 @@
   function isComplete(habit, date){
     var req = requiredSubCount(habit);
     return req > 0 && completedSubCount(habit, date) === req;
+  }
+
+  // Admin-only: flips a habit's completion status for an arbitrary date between fully
+  // complete (all subs/tasks marked) and fully incomplete (cleared), reusing the same
+  // storage the normal check-in flow uses so streaks/points/calendar all stay correct.
+  function adminToggleHabitComplete(habit, date){
+    var makeComplete = !isComplete(habit, date);
+    if (makeComplete){
+      var allIds = habit.type === "duo" ? (habit.subs || []).map(function(s){ return s.id; })
+        : habit.type === "multi" ? (habit.tasks || []).map(function(t){ return t.id; })
+        : ["done"];
+      setSubIdsFor(habit, date, allIds);
+    } else {
+      setSubIdsFor(habit, date, []);
+    }
+    var s = currentStreak(habit);
+    if (!state.longest[habit.id] || s > state.longest[habit.id]) state.longest[habit.id] = s;
+    save();
+    renderCalendar();
   }
 
   function currentStreak(habit){
@@ -1295,8 +1368,95 @@
     showCalTab("calendar");
   }
   function closeCalendar(){
+    adminEditingHistory = false;
     document.getElementById("calendarPage").style.display = "none";
     document.getElementById("mainPage").style.display = "block";
+  }
+
+  // ---- settings + admin controls ----
+  function openSettings(){
+    document.getElementById("mainPage").style.display = "none";
+    document.getElementById("settingsPage").style.display = "block";
+    renderSettings();
+  }
+  function closeSettings(){
+    document.getElementById("settingsPage").style.display = "none";
+    document.getElementById("mainPage").style.display = "block";
+    render();
+  }
+  function renderSettings(){
+    var body = document.getElementById("settingsBody");
+    body.innerHTML = "";
+    var card = el("div", "settings-card");
+    if (!adminMode){
+      card.appendChild(el("div", "settings-card-title", "Admin"));
+      card.appendChild(el("div", "settings-card-desc", "Sign in to correct past habit entries."));
+      var loginBtn = el("button", "sheet-save", "Admin Login");
+      loginBtn.style.width = "100%";
+      loginBtn.style.marginTop = "12px";
+      loginBtn.addEventListener("click", openAdminLoginSheet);
+      card.appendChild(loginBtn);
+    } else {
+      card.appendChild(el("div", "settings-card-title", "Admin Controls"));
+      card.appendChild(el("div", "settings-card-desc", "You're signed in as admin."));
+      var editBtn = el("button", "sheet-save", "Edit History");
+      editBtn.style.width = "100%";
+      editBtn.style.marginTop = "12px";
+      editBtn.addEventListener("click", openAdminEditHistory);
+      card.appendChild(editBtn);
+      var exitBtn = el("button", "sheet-cancel", "Exit Admin Control");
+      exitBtn.style.width = "100%";
+      exitBtn.style.marginTop = "10px";
+      exitBtn.addEventListener("click", exitAdminControl);
+      card.appendChild(exitBtn);
+    }
+    body.appendChild(card);
+  }
+
+  function openAdminLoginSheet(){
+    document.getElementById("adminPasswordInput").value = "";
+    document.getElementById("adminLoginError").style.display = "none";
+    document.getElementById("adminLoginSheet").classList.add("show");
+    document.getElementById("adminPasswordInput").focus();
+  }
+  function closeAdminLoginSheet(){
+    document.getElementById("adminLoginSheet").classList.remove("show");
+  }
+  function attemptAdminLogin(){
+    var val = document.getElementById("adminPasswordInput").value;
+    if (val === ADMIN_PASSWORD){
+      adminMode = true;
+      closeAdminLoginSheet();
+      renderSettings();
+    } else {
+      document.getElementById("adminLoginError").style.display = "block";
+    }
+  }
+  function exitAdminControl(){
+    adminMode = false;
+    adminEditingHistory = false;
+    renderSettings();
+  }
+
+  // Reuses the calendar page (with a red ADMIN banner) rather than a separate page —
+  // same view, different mode. Submit Changes returns to Settings, still logged in.
+  function openAdminEditHistory(){
+    adminEditingHistory = true;
+    var now = new Date();
+    calendarState.viewYear = now.getFullYear();
+    calendarState.viewMonth = now.getMonth();
+    calendarState.filter = "overall";
+    calendarState.selectedDate = todayStr();
+    document.getElementById("settingsPage").style.display = "none";
+    document.getElementById("calendarPage").style.display = "block";
+    showCalTab("calendar");
+    renderCalendar();
+  }
+  function submitAdminChanges(){
+    adminEditingHistory = false;
+    document.getElementById("calendarPage").style.display = "none";
+    document.getElementById("settingsPage").style.display = "block";
+    renderSettings();
   }
 
   function showCalTab(which){
@@ -1363,6 +1523,20 @@
       box.appendChild(el("div", "empty-note", "No habits tracked this day."));
       return;
     }
+
+    if (adminEditingHistory){
+      habitsThatDay.forEach(function(h){
+        var complete = isComplete(h, ds);
+        var row = el("div", "admin-day-row");
+        row.appendChild(el("div", "cal-detail-name", h.name));
+        var toggle = el("button", "admin-day-toggle" + (complete ? " complete" : ""), complete ? "Complete" : "Incomplete");
+        toggle.addEventListener("click", function(){ adminToggleHabitComplete(h, ds); });
+        row.appendChild(toggle);
+        box.appendChild(row);
+      });
+      return;
+    }
+
     var totalEarned = 0;
     habitsThatDay.forEach(function(h){
       var earned = Math.round(pointsEarned(h, ds));
@@ -1379,6 +1553,8 @@
   }
 
   function renderCalendar(){
+    document.getElementById("adminBanner").classList.toggle("show", adminEditingHistory);
+
     var since = startDateStr();
     var sinceLabel = new Date(since + "T00:00:00").toLocaleDateString(undefined, { month:"long", day:"numeric", year:"numeric" });
     document.getElementById("calSince").textContent = "Tracking since " + sinceLabel;
@@ -1428,6 +1604,14 @@
         })(ds);
       } else {
         indicator.classList.add("out-of-range");
+        if (adminEditingHistory){
+          (function(dsClosure){
+            cell.addEventListener("click", function(){
+              calendarState.selectedDate = dsClosure;
+              renderCalendar();
+            });
+          })(ds);
+        }
       }
       cell.appendChild(indicator);
       grid.appendChild(cell);
@@ -1438,6 +1622,14 @@
 
   document.getElementById("calendarBtn").addEventListener("click", openCalendar);
   document.getElementById("backToHome").addEventListener("click", closeCalendar);
+  document.getElementById("settingsBtn").addEventListener("click", openSettings);
+  document.getElementById("backFromSettings").addEventListener("click", closeSettings);
+  document.getElementById("submitAdminChangesBtn").addEventListener("click", submitAdminChanges);
+  document.getElementById("submitAdminLogin").addEventListener("click", attemptAdminLogin);
+  document.getElementById("cancelAdminLogin").addEventListener("click", closeAdminLoginSheet);
+  document.getElementById("adminPasswordInput").addEventListener("keydown", function(e){
+    if (e.key === "Enter") attemptAdminLogin();
+  });
   document.getElementById("calPrevBtn").addEventListener("click", function(){
     calendarState.viewMonth--;
     if (calendarState.viewMonth < 0){ calendarState.viewMonth = 11; calendarState.viewYear--; }
