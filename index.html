@@ -17,14 +17,16 @@
     --bg:#F1EDE1;
     --panel:#FBF9F3;
     --ink:#2A2F28;
-    --ink-soft:#8C8A78;
+    --ink-soft:#66644F;
     --accent:#3F6B4A;
+    --accent-strong:#3F6B4A;
     --accent-soft:#DCE7DE;
-    --gold:#B8863B;
+    --gold:#8C5F26;
     --gold-soft:#F1E4C8;
     --dot-empty:#DDD7C6;
     --rule:rgba(42,47,40,0.10);
     --danger:#B0473F;
+    --danger-strong:#B0473F;
   }
   [data-theme="dark"]{
     --bg:#1C1A16;
@@ -32,12 +34,14 @@
     --ink:#EDE8DD;
     --ink-soft:#9C9686;
     --accent:#5FA173;
-    --accent-soft:#2B3A2E;
+    --accent-strong:#357A4C;
+    --accent-soft:#1F2A24;
     --gold:#D3A44F;
     --gold-soft:#3A2F1A;
     --dot-empty:#3A362C;
     --rule:rgba(237,232,221,0.13);
     --danger:#D97166;
+    --danger-strong:#BF473B;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
@@ -62,7 +66,7 @@
   .cal-since{ font-size:12px; color:var(--ink-soft); margin:0 2px 16px; }
   .cal-tabs{ display:flex; gap:8px; margin:18px 0 18px; }
   .cal-tab{ flex:1; border:none; background:var(--panel); box-shadow: inset 0 0 0 1px var(--rule); color:var(--ink-soft); font-size:13px; font-weight:700; padding:11px 0; border-radius:11px; cursor:pointer; }
-  .cal-tab.active{ background:var(--ink); color:#fff; box-shadow:none; }
+  .cal-tab.active{ background:var(--ink); color:var(--panel); box-shadow:none; }
   .history-card{ background:var(--panel); border-radius:14px; padding:16px; margin-bottom:12px; box-shadow: inset 0 0 0 1px var(--rule); }
   .history-name{ font-size:15px; font-weight:700; margin-bottom:4px; }
   .history-range{ font-size:12px; color:var(--ink-soft); margin-bottom:10px; }
@@ -72,7 +76,7 @@
   .cal-filter-row{ display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px; -webkit-overflow-scrolling:touch; }
   .cal-filter-row::-webkit-scrollbar{ display:none; }
   .cal-pill{ flex-shrink:0; border:none; box-shadow: inset 0 0 0 1.5px var(--rule); background:var(--panel); color:var(--ink-soft); font-size:12.5px; font-weight:600; padding:9px 14px; border-radius:999px; cursor:pointer; white-space:nowrap; }
-  .cal-pill.active{ background:var(--ink); color:#fff; box-shadow:none; }
+  .cal-pill.active{ background:var(--ink); color:var(--panel); box-shadow:none; }
   .cal-month-nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
   .cal-nav-btn{ border:none; background:var(--panel); box-shadow: inset 0 0 0 1px var(--rule); width:34px; height:34px; border-radius:10px; font-size:18px; color:var(--ink); cursor:pointer; }
   .cal-nav-btn.disabled{ opacity:0.3; pointer-events:none; }
@@ -98,7 +102,7 @@
 
   .todo-alert{
     display:none; align-items:center; gap:6px; width:fit-content;
-    background:var(--danger); color:#fff; font-size:11px; font-weight:700;
+    background:var(--danger-strong); color:#fff; font-size:11px; font-weight:700;
     letter-spacing:0.02em; padding:6px 11px 6px 9px; border-radius:999px;
     margin:12px 0 0 2px; cursor:pointer; box-shadow:0 2px 6px rgba(176,71,63,0.35);
   }
@@ -111,7 +115,7 @@
   .tier-next{ font-size:11px; color:var(--ink-soft); text-align:right; margin-top:2px; }
   .tier-track{ height:6px; border-radius:999px; background:var(--dot-empty); overflow:hidden; }
   .tier-fill{ height:100%; background:var(--gold); border-radius:999px; transition:width .4s ease; }
-  .perfect-banner{ margin-top:14px; padding:10px 12px; border-radius:10px; background:var(--gold-soft); color:#6B4E1E; font-size:12.5px; font-weight:600; text-align:center; display:none; }
+  .perfect-banner{ margin-top:14px; padding:10px 12px; border-radius:10px; background:var(--gold-soft); color:var(--ink); font-size:12.5px; font-weight:600; text-align:center; display:none; }
   .perfect-banner.show{ display:block; }
 
   .section-row{ display:flex; align-items:center; justify-content:space-between; margin:0 2px 10px; }
@@ -149,11 +153,11 @@
   .dot.today{ box-shadow: 0 0 0 2px var(--panel), 0 0 0 3px var(--ink-soft); }
 
   .mark-btn{ width:100%; border:none; padding:13px 0; border-radius:11px; font-size:14px; font-weight:700; cursor:pointer; box-shadow: inset 0 0 0 1.5px var(--accent); background:transparent; color:var(--accent); }
-  .mark-btn.done{ background:var(--accent); color:#fff; box-shadow:none; }
+  .mark-btn.done{ background:var(--accent-strong); color:#fff; box-shadow:none; }
 
   .subrow{ display:flex; gap:8px; }
   .sub-pill{ flex:1; border:none; padding:12px 0; border-radius:11px; font-size:13px; font-weight:700; cursor:pointer; box-shadow: inset 0 0 0 1.5px var(--accent); background:transparent; color:var(--accent); }
-  .sub-pill.done{ background:var(--accent); color:#fff; box-shadow:none; }
+  .sub-pill.done{ background:var(--accent-strong); color:#fff; box-shadow:none; }
 
   .task-list{ display:flex; flex-direction:column; gap:8px; }
   .todo-remove{ border:none; background:none; color:var(--ink-soft); font-size:13px; cursor:pointer; padding:4px 6px; flex-shrink:0; }
@@ -161,7 +165,8 @@
   .task-row{ display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:10px; background:var(--bg); cursor:pointer; transition:background .15s ease; }
   .task-check{
     width:26px; height:26px; border-radius:50%; flex-shrink:0;
-    display:flex; align-items:center; justify-content:center;
+    display:flex; align-items:flex-end; justify-content:flex-end;
+    padding:0 4px 3px 0; box-sizing:border-box;
     font-size:13px; font-weight:800; color:#fff;
     box-shadow:0 1px 3px rgba(0,0,0,0.22), inset 0 0 0 1px rgba(255,255,255,0.25);
     opacity:0.4; transition:opacity .15s ease, transform .15s ease;
@@ -173,7 +178,7 @@
   .add-row{ display:flex; gap:8px; margin-top:6px; }
   .add-input{ flex:1; border:none; border-radius:11px; padding:13px 14px; font-size:14px; background:var(--panel); box-shadow: inset 0 0 0 1px var(--rule); color:var(--ink); }
   .add-input:focus{ outline:none; box-shadow: inset 0 0 0 1.5px var(--accent); }
-  .add-btn{ border:none; border-radius:11px; padding:0 20px; font-size:14px; font-weight:700; background:var(--accent); color:#fff; cursor:pointer; }
+  .add-btn{ border:none; border-radius:11px; padding:0 20px; font-size:14px; font-weight:700; background:var(--accent-strong); color:#fff; cursor:pointer; }
 
   .suggest-panel{
     display:none;
@@ -206,9 +211,9 @@
   #editSheet{ position:fixed; inset:0; background:rgba(42,47,40,0.5); display:none; align-items:flex-end; justify-content:center; z-index:30; }
   #editSheet.show{ display:flex; }
 
-  .admin-banner{ display:none; align-items:center; justify-content:space-between; gap:10px; background:var(--danger); color:#fff; padding:10px 10px 10px 14px; border-radius:12px; margin-bottom:16px; font-size:12px; font-weight:800; letter-spacing:0.03em; }
+  .admin-banner{ display:none; align-items:center; justify-content:space-between; gap:10px; background:var(--danger-strong); color:#fff; padding:10px 10px 10px 14px; border-radius:12px; margin-bottom:16px; font-size:12px; font-weight:800; letter-spacing:0.03em; }
   .admin-banner.show{ display:flex; }
-  .admin-banner button{ border:none; background:#fff; color:var(--danger); font-weight:800; font-size:11.5px; padding:8px 12px; border-radius:999px; cursor:pointer; flex-shrink:0; }
+  .admin-banner button{ border:none; background:#fff; color:var(--danger-strong); font-weight:800; font-size:11.5px; padding:8px 12px; border-radius:999px; cursor:pointer; flex-shrink:0; }
   .admin-day-row{ display:flex; align-items:center; justify-content:space-between; padding:9px 0; font-size:13px; }
   .admin-habit-block{ padding:6px 0 10px; border-bottom:1px solid var(--rule); }
   .admin-habit-block:last-child{ border-bottom:none; }
@@ -216,13 +221,17 @@
   .admin-sub-row{ display:flex; align-items:center; justify-content:space-between; padding:6px 0 6px 12px; font-size:12.5px; color:var(--ink-soft); }
   .admin-day-toggle{ border:none; background:var(--bg); box-shadow: inset 0 0 0 1.5px var(--danger); color:var(--danger); font-weight:700; font-size:12px; padding:8px 14px; border-radius:999px; cursor:pointer; }
   .admin-day-toggle.small{ padding:6px 12px; font-size:11px; }
-  .admin-day-toggle.complete{ background:var(--accent); color:#fff; box-shadow:none; }
+  .admin-day-toggle.complete{ background:var(--accent-strong); color:#fff; box-shadow:none; }
   .settings-card{ background:var(--panel); border-radius:14px; padding:18px 16px; margin-bottom:12px; box-shadow: inset 0 0 0 1px var(--rule); }
   .settings-card-title{ font-size:15px; font-weight:700; margin-bottom:4px; }
   .settings-card-desc{ font-size:12.5px; color:var(--ink-soft); margin-bottom:4px; }
   .theme-toggle{ display:flex; gap:8px; margin-top:12px; }
   .theme-toggle-btn{ flex:1; border:none; background:var(--bg); box-shadow: inset 0 0 0 1px var(--rule); color:var(--ink-soft); font-weight:700; font-size:13px; padding:11px 0; border-radius:11px; cursor:pointer; }
   .theme-toggle-btn.active{ background:var(--ink); color:var(--panel); box-shadow:none; }
+  .custom-color-row{ margin-top:12px; }
+  #customBgInput{ width:100%; height:44px; border:none; border-radius:10px; cursor:pointer; padding:0; margin-bottom:8px; background:none; }
+  #customBgInput::-webkit-color-swatch-wrapper{ padding:0; }
+  #customBgInput::-webkit-color-swatch{ border:none; border-radius:10px; }
   .field-error{ color:var(--danger); font-size:12px; font-weight:600; margin-top:6px; }
   #typeSheet{ position:fixed; inset:0; background:rgba(42,47,40,0.5); display:none; align-items:flex-end; justify-content:center; z-index:30; }
   #typeSheet.show{ display:flex; }
@@ -245,7 +254,7 @@
   .task-remove{ border:none; background:none; color:var(--danger); font-size:18px; line-height:1; padding:4px 8px; cursor:pointer; }
   .add-task-link{ border:none; background:none; color:var(--accent); font-weight:700; font-size:13px; cursor:pointer; padding:6px 2px; }
   .sheet-actions{ display:flex; gap:10px; margin-top:20px; }
-  .sheet-save{ flex:1; border:none; padding:14px 0; border-radius:11px; background:var(--accent); color:#fff; font-weight:700; font-size:14px; cursor:pointer; }
+  .sheet-save{ flex:1; border:none; padding:14px 0; border-radius:11px; background:var(--accent-strong); color:#fff; font-weight:700; font-size:14px; cursor:pointer; }
   .sheet-cancel{ flex:1; border:none; padding:14px 0; border-radius:11px; background:transparent; box-shadow: inset 0 0 0 1px var(--rule); color:var(--ink-soft); font-weight:600; font-size:14px; cursor:pointer; }
 </style>
 </head>
@@ -600,7 +609,7 @@
     completionLog: {},   // { "2026-08-13": { "h1": ["morning"], "h2": ["t1"] } }
     longest: {},         // { "h1": 7 }
     todos: {},           // { "2026-08-13": [{ id:"td1", name:"Take out the trash", done:true }] } — daily, flat-rate, not shown in the calendar
-    settings: { theme:"light" }
+    settings: { theme:"light", customBg:null }
   };
   var manageMode = false;
   // Admin controls: adminMode persists (in memory only, not saved) for the rest of
@@ -757,8 +766,9 @@
       }
     }catch(e){}
     if (!state.todos) state.todos = {};
-    if (!state.settings) state.settings = { theme:"light" };
+    if (!state.settings) state.settings = { theme:"light", customBg:null };
     if (!state.settings.theme) state.settings.theme = "light";
+    if (state.settings.customBg === undefined) state.settings.customBg = null;
     repairHabits();
   }
 
@@ -1098,7 +1108,7 @@
           var done = ids.indexOf(task.id) !== -1;
           var colorIdx = idx * 3 + ti;
           var trow = el("div", "task-row" + (done ? " done" : ""));
-          trow.style.background = done ? lightenColor(taskColor(colorIdx), 0.82) : "";
+          trow.style.background = done ? themeTint(taskColor(colorIdx), 0.82) : "";
           var check = el("div", "task-check", done ? "\u2713" : "");
           check.style.background = taskOmbre(colorIdx);
           var name = el("div", "task-name", task.name);
@@ -1233,7 +1243,7 @@
     }
     today.forEach(function(item, i){
       var row = el("div", "task-row" + (item.done ? " done" : ""));
-      row.style.background = item.done ? lightenColor(taskColor(i), 0.82) : "";
+      row.style.background = item.done ? themeTint(taskColor(i), 0.82) : "";
       var check = el("div", "task-check", item.done ? "\u2713" : "");
       check.style.background = taskOmbre(i);
       var name = el("div", "task-name", item.name);
@@ -1342,7 +1352,10 @@
   document.getElementById("todoAlert").addEventListener("click", openTodo);
 
   // ---- calendar page ----
-  var PIE_COLORS = ["#3F6B4A","#B8863B","#5C7A99","#A65C4B","#7B6C9E","#5E8C7A","#C18B3F","#8A5A7A"];
+  // Every color here is darkened as needed so a white checkmark on top always
+  // clears 4.5:1 contrast (WCAG AA) — the original lighter golds/blues/teals fell
+  // as low as 3:1, which read poorly, especially on smaller screens.
+  var PIE_COLORS = ["#3F6B4A","#956D30","#5A7896","#A65C4B","#7B6C9E","#547D6D","#976C31","#8A5A7A"];
   function pieColor(i){ return PIE_COLORS[i % PIE_COLORS.length]; }
 
   // Blends a hex color toward white by `amt` (0-1) to build the lighter end of an ombré.
@@ -1355,6 +1368,29 @@
     g = Math.round(g + (255-g)*amt);
     b = Math.round(b + (255-b)*amt);
     return "rgb(" + r + "," + g + "," + b + ")";
+  }
+  // Blends a hex color toward black by `amt` (0-1) — the dark-mode counterpart to
+  // lightenColor, used so a "completed" row's tinted background stays dark enough
+  // for the theme's (light-colored) ink text to still read clearly on top of it.
+  function darkenColor(hex, amt){
+    hex = hex.replace("#","");
+    var r = parseInt(hex.substring(0,2),16);
+    var g = parseInt(hex.substring(2,4),16);
+    var b = parseInt(hex.substring(4,6),16);
+    r = Math.round(r * (1-amt));
+    g = Math.round(g * (1-amt));
+    b = Math.round(b * (1-amt));
+    return "rgb(" + r + "," + g + "," + b + ")";
+  }
+  function isDarkTheme(){
+    return document.documentElement.getAttribute("data-theme") === "dark";
+  }
+  // A pale tint reads fine against dark ink in light mode, but the SAME pale tint
+  // is a near-white bubble that swallows light-colored ink in dark mode. This picks
+  // the correct direction (toward white, or toward black) for whichever theme —
+  // including a custom background — is currently active.
+  function themeTint(hex, amt){
+    return isDarkTheme() ? darkenColor(hex, amt) : lightenColor(hex, amt);
   }
   function taskColor(i){ return pieColor(i); }
   // Solid color bubble with a lighter-shade ombré, top-left to bottom-right.
@@ -1430,11 +1466,26 @@
     var toggleRow = el("div", "theme-toggle");
     var lightBtn = el("button", "theme-toggle-btn" + (state.settings.theme === "light" ? " active" : ""), "Light");
     var darkBtn = el("button", "theme-toggle-btn" + (state.settings.theme === "dark" ? " active" : ""), "Dark");
+    var customBtn = el("button", "theme-toggle-btn" + (state.settings.theme === "custom" ? " active" : ""), "Custom");
     lightBtn.addEventListener("click", function(){ setTheme("light"); });
     darkBtn.addEventListener("click", function(){ setTheme("dark"); });
+    customBtn.addEventListener("click", function(){ setCustomTheme(state.settings.customBg || "#8A8370"); });
     toggleRow.appendChild(lightBtn);
     toggleRow.appendChild(darkBtn);
+    toggleRow.appendChild(customBtn);
     appearanceCard.appendChild(toggleRow);
+
+    if (state.settings.theme === "custom"){
+      var colorRow = el("div", "custom-color-row");
+      var colorInput = document.createElement("input");
+      colorInput.type = "color";
+      colorInput.id = "customBgInput";
+      colorInput.value = state.settings.customBg || "#8A8370";
+      colorInput.addEventListener("input", function(){ setCustomTheme(this.value); });
+      colorRow.appendChild(colorInput);
+      colorRow.appendChild(el("div", "settings-card-desc", "Pick any hue — its shade is automatically tuned (and text/accent colors adjusted) to stay readable."));
+      appearanceCard.appendChild(colorRow);
+    }
     body.appendChild(appearanceCard);
 
     var card = el("div", "settings-card");
@@ -1463,7 +1514,81 @@
     body.appendChild(card);
   }
 
+  // ---- theme engine: light / dark / custom ----
+  // Every color a custom background needs to coordinate with is recomputed from
+  // scratch via WCAG contrast math (never a static guess), and the two hand-tuned
+  // palettes above are reused wholesale for accents/gold/danger/etc. once we know
+  // whether light or dark ink reads better against the chosen background.
+  var CUSTOM_THEME_PROPS = ["--bg","--panel","--ink","--ink-soft","--accent","--accent-strong","--accent-soft","--gold","--gold-soft","--dot-empty","--rule","--danger","--danger-strong"];
+  var LIGHT_FAMILY = { accent:"#3F6B4A", accentStrong:"#3F6B4A", accentSoft:"#DCE7DE", gold:"#8C5F26", goldSoft:"#F1E4C8", dotEmpty:"#DDD7C6", danger:"#B0473F", dangerStrong:"#B0473F", rule:"rgba(42,47,40,0.10)" };
+  var DARK_FAMILY  = { accent:"#5FA173", accentStrong:"#357A4C", accentSoft:"#1F2A24", gold:"#D3A44F", goldSoft:"#3A2F1A", dotEmpty:"#3A362C", danger:"#D97166", dangerStrong:"#BF473B", rule:"rgba(237,232,221,0.13)" };
+
+  function hexToRgbObj(hex){
+    hex = hex.replace("#","");
+    if (hex.length === 3) hex = hex.split("").map(function(c){ return c+c; }).join("");
+    return { r:parseInt(hex.substring(0,2),16), g:parseInt(hex.substring(2,4),16), b:parseInt(hex.substring(4,6),16) };
+  }
+  function relLuminance(hex){
+    var c = hexToRgbObj(hex);
+    function lin(v){ v = v/255; return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4); }
+    return 0.2126*lin(c.r) + 0.7152*lin(c.g) + 0.0722*lin(c.b);
+  }
+  function contrastRatio(hex1, hex2){
+    var l1 = relLuminance(hex1), l2 = relLuminance(hex2);
+    var lighter = Math.max(l1,l2), darker = Math.min(l1,l2);
+    return (lighter+0.05) / (darker+0.05);
+  }
+  function mixColor(hex1, hex2, amt){
+    var a = hexToRgbObj(hex1), b = hexToRgbObj(hex2);
+    var r = Math.round(a.r + (b.r-a.r)*amt);
+    var g = Math.round(a.g + (b.g-a.g)*amt);
+    var bl = Math.round(a.b + (b.b-a.b)*amt);
+    return "rgb(" + r + "," + g + "," + bl + ")";
+  }
+  function hexToHsl(hex){
+    var c = hexToRgbObj(hex);
+    var r = c.r/255, g = c.g/255, b = c.b/255;
+    var max = Math.max(r,g,b), min = Math.min(r,g,b);
+    var h, s, l = (max+min)/2;
+    if (max === min){ h = 0; s = 0; }
+    else {
+      var d = max - min;
+      s = l > 0.5 ? d/(2-max-min) : d/(max+min);
+      if (max === r) h = (g-b)/d + (g < b ? 6 : 0);
+      else if (max === g) h = (b-r)/d + 2;
+      else h = (r-g)/d + 4;
+      h /= 6;
+    }
+    return { h:h*360, s:s*100, l:l*100 };
+  }
+  function hslToHex(h, s, l){
+    h /= 360; s /= 100; l /= 100;
+    var r, g, b;
+    if (s === 0){ r = g = b = l; }
+    else {
+      var hue2rgb = function(p, q, t){
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q-p)*6*t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q-p)*(2/3-t)*6;
+        return p;
+      };
+      var q = l < 0.5 ? l*(1+s) : l+s-l*s;
+      var p = 2*l - q;
+      r = hue2rgb(p, q, h+1/3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h-1/3);
+    }
+    var toHex = function(v){ var h2 = Math.round(v*255).toString(16); return h2.length===1 ? "0"+h2 : h2; };
+    return "#" + toHex(r) + toHex(g) + toHex(b);
+  }
+
+  function clearCustomThemeOverrides(){
+    CUSTOM_THEME_PROPS.forEach(function(p){ document.documentElement.style.removeProperty(p); });
+  }
   function applyTheme(theme){
+    clearCustomThemeOverrides();
     document.documentElement.setAttribute("data-theme", theme);
     var metaTheme = document.querySelector('meta[name="theme-color"]');
     if (metaTheme) metaTheme.setAttribute("content", theme === "dark" ? "#1C1A16" : "#F1EDE1");
@@ -1472,6 +1597,47 @@
     state.settings.theme = theme;
     save();
     applyTheme(theme);
+    renderSettings();
+  }
+
+  // A raw picked color can't always host high-contrast text no matter which ink
+  // color you throw at it — a mid-gray background, for instance, is roughly
+  // equidistant from black and white, so BOTH options fall short of 4.5:1. Rather
+  // than gamble on the exact pixel picked, this keeps the chosen hue but snaps its
+  // lightness to the same safe zone the hand-tuned light/dark themes already use
+  // (verified ~91%/97% for a light feel, ~10%/12% for a dark feel), and caps
+  // saturation so it stays a color, not a neon wall. Guarantees strong contrast
+  // for literally any hue someone picks.
+  function applyCustomTheme(bgHex){
+    var hsl = hexToHsl(bgHex);
+    var isLight = hsl.l >= 50;
+    var cappedSat = Math.min(hsl.s, 40);
+    var bg = hslToHex(hsl.h, cappedSat, isLight ? 91 : 10);
+    var panel = hslToHex(hsl.h, cappedSat, isLight ? 97 : 12);
+    var family = isLight ? LIGHT_FAMILY : DARK_FAMILY;
+    var root = document.documentElement.style;
+    root.setProperty("--bg", bg);
+    root.setProperty("--panel", panel);
+    root.setProperty("--ink", isLight ? "#2A2F28" : "#EDE8DD");
+    root.setProperty("--ink-soft", isLight ? "#66644F" : "#9C9686");
+    root.setProperty("--accent", family.accent);
+    root.setProperty("--accent-strong", family.accentStrong);
+    root.setProperty("--accent-soft", family.accentSoft);
+    root.setProperty("--gold", family.gold);
+    root.setProperty("--gold-soft", family.goldSoft);
+    root.setProperty("--dot-empty", family.dotEmpty);
+    root.setProperty("--rule", family.rule);
+    root.setProperty("--danger", family.danger);
+    root.setProperty("--danger-strong", family.dangerStrong);
+    document.documentElement.setAttribute("data-theme", isLight ? "light" : "dark");
+    var metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) metaTheme.setAttribute("content", bg);
+  }
+  function setCustomTheme(hex){
+    state.settings.theme = "custom";
+    state.settings.customBg = hex;
+    save();
+    applyCustomTheme(hex);
     renderSettings();
   }
 
@@ -1718,7 +1884,11 @@
   });
 
   load();
-  applyTheme(state.settings.theme);
+  if (state.settings.theme === "custom" && state.settings.customBg){
+    applyCustomTheme(state.settings.customBg);
+  } else {
+    applyTheme(state.settings.theme);
+  }
   render();
 })();
 </script>
