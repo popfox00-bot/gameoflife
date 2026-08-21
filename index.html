@@ -1604,26 +1604,79 @@
   // color you throw at it — a mid-gray background, for instance, is roughly
   // equidistant from black and white, so BOTH options fall short of 4.5:1. Rather
   // than gamble on the exact pixel picked, this keeps the chosen hue but snaps its
-  // lightness to the same safe zone the hand-tuned light/dark themes already use
-  // (verified ~91%/97% for a light feel, ~10%/12% for a dark feel), and caps
-  // saturation so it stays a color, not a neon wall. Guarantees strong contrast
-  // for literally any hue someone picks.
+  // lightness into a safe zone — NOT a single fixed lightness for every hue (a flat
+  // 91% washes almost any hue down to a barely-tinted near-white, since colors
+  // converge toward white as lightness approaches 100% regardless of saturation).
+  // Instead this searches for the most vivid lightness — closest to 50%, where hues
+  // read strongest — that still clears the contrast target for that specific hue,
+  // so the picked color stays clearly present instead of fading out.
+  function findSafeLightness(hue, sat, isLight, targetContrast){
+    var ink = isLight ? "#2A2F28" : "#EDE8DD";
+    if (isLight){
+      for (var l = 40; l <= 97; l++){
+        if (contrastRatio(hslToHex(hue, sat, l), ink) >= targetContrast) return l;
+      }
+      return 91;
+    } else {
+      for (var l2 = 55; l2 >= 3; l2--){
+        if (contrastRatio(hslToHex(hue, sat, l2), ink) >= targetContrast) return l2;
+      }
+      return 10;
+    }
+  }
+  // Panel should read as a distinct, slightly lighter layer above bg — but only if
+  // that offset doesn't erode the safety margin; otherwise it just matches bg.
+  function findPanelLightness(hue, sat, isLight, bgL, targetContrast){
+    var ink = isLight ? "#2A2F28" : "#EDE8DD";
+    var offset = isLight ? 6 : 3;
+    var candidate = isLight ? Math.min(98, bgL + offset) : Math.min(bgL + offset, 30);
+    if (contrastRatio(hslToHex(hue, sat, candidate), ink) >= targetContrast) return candidate;
+    return bgL;
+  }
+  // ink-soft, and anything using --accent/--gold as TEXT (not as a filled button
+  // background), are fixed per-family colors tuned for the OLD washed-out baseline
+  // backgrounds. Now that bg/panel can be genuinely vivid, those fixed values can
+  // no longer be trusted — so instead of constraining bg to stay pale enough for
+  // them (which just reintroduces the washed-out problem), each is recomputed to
+  // fit whatever bg/panel actually turned out to be, searching the SAME hue that
+  // color represents (neutral gray for ink-soft, green for accent, gold for gold)
+  // for whichever lightness clears 4.5:1 against both bg and panel.
+  function deriveTextColor(hue, sat, isLight, bg, panel, targetContrast){
+    if (isLight){
+      for (var l = 60; l >= 3; l--){
+        var hex = hslToHex(hue, sat, l);
+        if (contrastRatio(hex, bg) >= targetContrast && contrastRatio(hex, panel) >= targetContrast) return hex;
+      }
+    } else {
+      for (var l2 = 40; l2 <= 97; l2++){
+        var hex2 = hslToHex(hue, sat, l2);
+        if (contrastRatio(hex2, bg) >= targetContrast && contrastRatio(hex2, panel) >= targetContrast) return hex2;
+      }
+    }
+    return isLight ? "#2A2F28" : "#EDE8DD";
+  }
   function applyCustomTheme(bgHex){
     var hsl = hexToHsl(bgHex);
     var isLight = hsl.l >= 50;
     var cappedSat = Math.min(hsl.s, 40);
-    var bg = hslToHex(hsl.h, cappedSat, isLight ? 91 : 10);
-    var panel = hslToHex(hsl.h, cappedSat, isLight ? 97 : 12);
+    var bgL = findSafeLightness(hsl.h, cappedSat, isLight, 4.6);
+    var panelL = findPanelLightness(hsl.h, cappedSat, isLight, bgL, 4.6);
+    var bg = hslToHex(hsl.h, cappedSat, bgL);
+    var panel = hslToHex(hsl.h, cappedSat, panelL);
+    var ink = isLight ? "#2A2F28" : "#EDE8DD";
+    var inkSoft = deriveTextColor(hsl.h, 8, isLight, bg, panel, 4.5);
+    var accentText = deriveTextColor(140, 40, isLight, bg, panel, 4.5);
+    var goldText = deriveTextColor(42, 55, isLight, bg, panel, 4.5);
     var family = isLight ? LIGHT_FAMILY : DARK_FAMILY;
     var root = document.documentElement.style;
     root.setProperty("--bg", bg);
     root.setProperty("--panel", panel);
-    root.setProperty("--ink", isLight ? "#2A2F28" : "#EDE8DD");
-    root.setProperty("--ink-soft", isLight ? "#66644F" : "#9C9686");
-    root.setProperty("--accent", family.accent);
+    root.setProperty("--ink", ink);
+    root.setProperty("--ink-soft", inkSoft);
+    root.setProperty("--accent", accentText);
     root.setProperty("--accent-strong", family.accentStrong);
     root.setProperty("--accent-soft", family.accentSoft);
-    root.setProperty("--gold", family.gold);
+    root.setProperty("--gold", goldText);
     root.setProperty("--gold-soft", family.goldSoft);
     root.setProperty("--dot-empty", family.dotEmpty);
     root.setProperty("--rule", family.rule);
