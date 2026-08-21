@@ -171,9 +171,9 @@
     padding:0 4px 3px 0; box-sizing:border-box;
     font-size:13px; font-weight:800; color:var(--bubble-glyph);
     box-shadow:0 1px 3px rgba(0,0,0,0.22), inset 0 0 0 1px rgba(255,255,255,0.25);
-    opacity:0.4; transition:opacity .15s ease, transform .15s ease;
+    transition:transform .15s ease;
   }
-  .task-row.done .task-check{ opacity:1; transform:scale(1.05); }
+  .task-row.done .task-check{ transform:scale(1.05); }
   .task-name{ font-size:13.5px; flex:1; }
   .task-pts{ font-size:11px; color:var(--ink-soft); font-family: ui-monospace, "SF Mono", Menlo, monospace; }
 
@@ -1618,7 +1618,7 @@
   // background it lightens — and the checkmark glyph flips (white ↔ near-black) to
   // match whichever the resulting bubble needs.
   function deriveBubbleColor(hue, sat, bgHex, isLight){
-    var presenceTarget = 3.5, glyphTarget = 4.5;
+    var presenceTarget = 4.5, glyphTarget = 4.5;
     if (isLight){
       for (var l = 55; l >= 8; l--){
         var hex = hslToHex(hue, sat, l);
