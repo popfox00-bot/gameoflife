@@ -27,6 +27,7 @@
     --rule:rgba(42,47,40,0.10);
     --danger:#B0473F;
     --danger-strong:#B0473F;
+    --bubble-glyph:#FFFFFF;
   }
   [data-theme="dark"]{
     --bg:#1C1A16;
@@ -42,6 +43,7 @@
     --rule:rgba(237,232,221,0.13);
     --danger:#D97166;
     --danger-strong:#BF473B;
+    --bubble-glyph:#1C1A16;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
@@ -167,7 +169,7 @@
     width:26px; height:26px; border-radius:50%; flex-shrink:0;
     display:flex; align-items:flex-end; justify-content:flex-end;
     padding:0 4px 3px 0; box-sizing:border-box;
-    font-size:13px; font-weight:800; color:#fff;
+    font-size:13px; font-weight:800; color:var(--bubble-glyph);
     box-shadow:0 1px 3px rgba(0,0,0,0.22), inset 0 0 0 1px rgba(255,255,255,0.25);
     opacity:0.4; transition:opacity .15s ease, transform .15s ease;
   }
@@ -1355,7 +1357,13 @@
   // Every color here is darkened as needed so a white checkmark on top always
   // clears 4.5:1 contrast (WCAG AA) — the original lighter golds/blues/teals fell
   // as low as 3:1, which read poorly, especially on smaller screens.
+  // This starting array is the fallback shown before the theme engine below
+  // recomputes it for the actual current background (see recomputePieColors).
   var PIE_COLORS = ["#3F6B4A","#956D30","#5A7896","#A65C4B","#7B6C9E","#547D6D","#976C31","#8A5A7A"];
+  // The hue+saturation identity of each color above, used to regenerate the
+  // palette at a lightness tuned for whatever background is currently active —
+  // see recomputePieColors.
+  var PIE_HUES = [[135.0,26],[36.2,51],[210.0,25],[11.2,38],[258.0,21],[156.6,20],[34.7,51],[320.0,21]];
   function pieColor(i){ return PIE_COLORS[i % PIE_COLORS.length]; }
 
   // Blends a hex color toward white by `amt` (0-1) to build the lighter end of an ombré.
@@ -1519,7 +1527,7 @@
   // scratch via WCAG contrast math (never a static guess), and the two hand-tuned
   // palettes above are reused wholesale for accents/gold/danger/etc. once we know
   // whether light or dark ink reads better against the chosen background.
-  var CUSTOM_THEME_PROPS = ["--bg","--panel","--ink","--ink-soft","--accent","--accent-strong","--accent-soft","--gold","--gold-soft","--dot-empty","--rule","--danger","--danger-strong"];
+  var CUSTOM_THEME_PROPS = ["--bg","--panel","--ink","--ink-soft","--accent","--accent-strong","--accent-soft","--gold","--gold-soft","--dot-empty","--rule","--danger","--danger-strong","--bubble-glyph"];
   var LIGHT_FAMILY = { accent:"#3F6B4A", accentStrong:"#3F6B4A", accentSoft:"#DCE7DE", gold:"#8C5F26", goldSoft:"#F1E4C8", dotEmpty:"#DDD7C6", danger:"#B0473F", dangerStrong:"#B0473F", rule:"rgba(42,47,40,0.10)" };
   var DARK_FAMILY  = { accent:"#5FA173", accentStrong:"#357A4C", accentSoft:"#1F2A24", gold:"#D3A44F", goldSoft:"#3A2F1A", dotEmpty:"#3A362C", danger:"#D97166", dangerStrong:"#BF473B", rule:"rgba(237,232,221,0.13)" };
 
@@ -1592,12 +1600,44 @@
     document.documentElement.setAttribute("data-theme", theme);
     var metaTheme = document.querySelector('meta[name="theme-color"]');
     if (metaTheme) metaTheme.setAttribute("content", theme === "dark" ? "#1C1A16" : "#F1EDE1");
+    recomputePieColors(theme === "dark" ? "#1C1A16" : "#F1EDE1", theme !== "dark");
   }
   function setTheme(theme){
     state.settings.theme = theme;
     save();
     applyTheme(theme);
     renderSettings();
+  }
+
+  // Task-check/todo bubbles and the calendar's pie-style day indicators share this
+  // same palette. A color that reads fine sitting on the app's own default page can
+  // still lose all presence against a different background — a mid-dark bubble color
+  // that pops on a pale cream page nearly disappears against an equally mid-dark
+  // custom background. So the bubble color is regenerated for whatever background is
+  // ACTUALLY active: on a light background it darkens for contrast, on a dark
+  // background it lightens — and the checkmark glyph flips (white ↔ near-black) to
+  // match whichever the resulting bubble needs.
+  function deriveBubbleColor(hue, sat, bgHex, isLight){
+    var presenceTarget = 3.5, glyphTarget = 4.5;
+    if (isLight){
+      for (var l = 55; l >= 8; l--){
+        var hex = hslToHex(hue, sat, l);
+        if (contrastRatio(hex, bgHex) >= presenceTarget && contrastRatio(hex, "#FFFFFF") >= glyphTarget) return hex;
+      }
+      return hslToHex(hue, sat, 20);
+    } else {
+      for (var l2 = 35; l2 <= 92; l2++){
+        var hex2 = hslToHex(hue, sat, l2);
+        if (contrastRatio(hex2, bgHex) >= presenceTarget && contrastRatio(hex2, "#1C1A16") >= glyphTarget) return hex2;
+      }
+      return hslToHex(hue, sat, 75);
+    }
+  }
+  function recomputePieColors(bgHex, isLight){
+    PIE_COLORS = PIE_HUES.map(function(pair){
+      return deriveBubbleColor(pair[0], pair[1], bgHex, isLight);
+    });
+    document.documentElement.style.setProperty("--bubble-glyph", isLight ? "#FFFFFF" : "#1C1A16");
   }
 
   // A raw picked color can't always host high-contrast text no matter which ink
@@ -1685,6 +1725,7 @@
     document.documentElement.setAttribute("data-theme", isLight ? "light" : "dark");
     var metaTheme = document.querySelector('meta[name="theme-color"]');
     if (metaTheme) metaTheme.setAttribute("content", bg);
+    recomputePieColors(bg, isLight);
   }
   function setCustomTheme(hex){
     state.settings.theme = "custom";
